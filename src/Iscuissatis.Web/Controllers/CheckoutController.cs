@@ -14,7 +14,8 @@ public class CheckoutController(
     CartService cartService,
     OrderService orderService,
     IZipCodeLookup zipCodeLookup,
-    UserManager<ApplicationUser> userManager) : Controller
+    UserManager<ApplicationUser> userManager,
+    AddressService addressService) : Controller
 {
     [HttpGet("/checkout")]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -29,11 +30,36 @@ public class CheckoutController(
         ViewData["Title"] = "Finalizar compra";
         ViewData["Cart"] = cart;
 
-        return View(new CheckoutFormModel
+        var form = new CheckoutFormModel
         {
             Recipient = User.Identity?.IsAuthenticated == true ? User.Identity.Name ?? string.Empty : string.Empty,
             GuestEmail = User.Identity?.IsAuthenticated == true ? User.Identity.Name : null,
-        });
+        };
+
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            var identityUser = await userManager.GetUserAsync(User);
+
+            if (Guid.TryParse(identityUser?.Id, out var customerId))
+            {
+                var saved = (await addressService.ListAsync(customerId, cancellationToken))
+                    .FirstOrDefault(address => address.IsDefault);
+
+                if (saved is not null)
+                {
+                    form.Recipient = saved.Recipient;
+                    form.ZipCode = saved.ZipCode;
+                    form.Street = saved.Street;
+                    form.Number = saved.Number;
+                    form.Complement = saved.Complement;
+                    form.District = saved.District;
+                    form.City = saved.City;
+                    form.State = saved.State;
+                }
+            }
+        }
+
+        return View(form);
     }
 
     [HttpPost("/checkout")]

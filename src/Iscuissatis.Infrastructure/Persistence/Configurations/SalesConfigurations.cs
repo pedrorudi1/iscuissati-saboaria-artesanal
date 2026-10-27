@@ -81,6 +81,23 @@ public static class SalesConfigurations
             entity.HasIndex(reservation => new { reservation.ProductVariantId, reservation.ReleasedAtUtc });
         });
 
+        builder.Entity<Address>(entity =>
+        {
+            entity.ToTable("Addresses");
+            entity.HasKey(address => address.Id);
+            entity.Property(address => address.Id).ValueGeneratedNever();
+            entity.Property(address => address.Label).HasMaxLength(60).IsRequired();
+            entity.Property(address => address.Recipient).HasMaxLength(160).IsRequired();
+            entity.Property(address => address.Street).HasMaxLength(200).IsRequired();
+            entity.Property(address => address.Number).HasMaxLength(20).IsRequired();
+            entity.Property(address => address.Complement).HasMaxLength(120);
+            entity.Property(address => address.District).HasMaxLength(120);
+            entity.Property(address => address.City).HasMaxLength(120).IsRequired();
+            entity.Property(address => address.State).HasMaxLength(2).IsRequired();
+            entity.Property(address => address.ZipCode).HasMaxLength(8).IsRequired();
+            entity.HasIndex(address => new { address.CustomerId, address.IsDefault });
+        });
+
         builder.Entity<CartItem>(entity =>
         {
             entity.ToTable("CartItems");

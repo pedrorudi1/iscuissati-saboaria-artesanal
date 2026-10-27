@@ -68,6 +68,8 @@ builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<IAddressRepository, AddressRepository>();
+builder.Services.AddScoped<AddressService>();
 builder.Services.AddHttpClient<IZipCodeLookup, ViaCepLookup>(client =>
 {
     client.BaseAddress = new Uri("https://viacep.com.br/");
