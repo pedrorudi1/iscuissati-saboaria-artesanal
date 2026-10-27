@@ -1,0 +1,31 @@
+@model string[]
+@{
+    ViewData["Title"] = "Códigos de recuperação";
+}
+
+<section class="max-w-2xl">
+    <p class="eyebrow">Segurança</p>
+    <h2 class="mt-2 text-2xl">Guarde seus códigos de recuperação</h2>
+
+    <div class="card mt-6">
+        <p class="text-sm text-muted">
+            Cada código funciona uma única vez, caso você perca o acesso ao aplicativo autenticador.
+            Esta é a única vez que eles aparecem — salve em local seguro e offline.
+        </p>
+
+        <ul class="mt-6 grid gap-2 font-mono text-lg sm:grid-cols-2">
+            @foreach (var code in Model)
+            {
+                <li class="rounded border border-line bg-bg px-4 py-2 tracking-widest">@code</li>
+            }
+        </ul>
+
+        <form method="post" asp-action="RegenerateRecoveryCodes" class="mt-6">
+            <button type="submit" class="btn btn-outline">Gerar novos códigos</button>
+        </form>
+    </div>
+
+    <p class="mt-6">
+        <a class="btn btn-primary" asp-controller="Dashboard" asp-action="Index">Ir para o painel</a>
+    </p>
+</section>

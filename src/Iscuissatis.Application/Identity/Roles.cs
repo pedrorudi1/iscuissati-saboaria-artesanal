@@ -13,4 +13,6 @@ public static class Roles
 
     /// <summary>Papéis que podem entrar na área administrativa.</summary>
     public const string AdminArea = Admin + "," + Operador;
+
+    public static bool IsAdminArea(string? role) => role is Admin or Operador;
 }

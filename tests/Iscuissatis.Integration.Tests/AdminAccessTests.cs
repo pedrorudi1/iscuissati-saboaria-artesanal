@@ -53,15 +53,15 @@ public class AdminAccessTests(IntegrationTestFixture fixture)
     }
 
     [Fact]
-    public async Task Admin_signs_in_and_reaches_the_admin_dashboard()
+    public async Task Admin_without_two_factor_is_redirected_to_the_authenticator_setup()
     {
         var client = await AuthHelper.SignInAsync(
             fixture.Factory, IntegrationTestFixture.AdminEmail, IntegrationTestFixture.AdminPassword);
 
         var response = await client.GetAsync("/admin");
 
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        (await response.Content.ReadAsStringAsync()).ShouldContain("Área administrativa");
+        response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+        response.Headers.Location!.AbsolutePath.ShouldBe("/admin/seguranca/2fa");
     }
 
     private async Task EnsureCustomerAsync()

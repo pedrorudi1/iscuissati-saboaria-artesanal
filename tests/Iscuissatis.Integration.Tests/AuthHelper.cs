@@ -41,6 +41,26 @@ public static partial class AuthHelper
         return client;
     }
 
+
+    public static async Task<HttpResponseMessage> PostWithAntiforgeryAsync(
+        HttpClient client,
+        string pageUrl,
+        string postUrl,
+        IDictionary<string, string> fields)
+    {
+        var page = await client.GetAsync(pageUrl);
+        page.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var token = AntiforgeryToken().Match(await page.Content.ReadAsStringAsync()).Groups["token"].Value;
+        token.ShouldNotBeNullOrWhiteSpace();
+
+        fields["__RequestVerificationToken"] = token;
+        return await client.PostAsync(postUrl, new FormUrlEncodedContent(fields));
+    }
+
+    public static HttpClient CreateBrowser(Func<HttpClient> factory)
+        => factory();
+
     [GeneratedRegex("name=\"__RequestVerificationToken\"[^>]*value=\"(?<token>[^\"]+)\"")]
     private static partial Regex AntiforgeryToken();
 }
