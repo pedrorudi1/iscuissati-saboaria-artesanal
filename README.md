@@ -12,8 +12,10 @@ Kit inicial para construir a loja virtual e o painel administrativo com agentes 
 └─ docs/
    ├─ plano-de-desenvolvimento.md    plano completo: stack, arquitetura, fases, TDD
    ├─ design-tokens.md               cores, fontes e componentes da marca
-   ├─ specs/01-fundacao.md           primeira spec (modelo para as próximas)
+   ├─ specs/01-fundacao.md           fundação (concluída)
+   ├─ specs/02-catalogo.md           catálogo e admin de produtos (fase atual)
    ├─ adr/0001-gateway-de-pagamento.md   proposta de gateway (não decidido)
+   ├─ adr/0002-verificacao-em-duas-etapas.md   2FA obrigatório no painel (aceito)
    └─ design/                        protótipos: home (desktop e mobile) e página do produto
 ```
 
