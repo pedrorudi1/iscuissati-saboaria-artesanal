@@ -64,6 +64,23 @@ public sealed class ProductRepository(AppDbContext dbContext) : IProductReposito
                        && (excludeProductId == null || variant.ProductId != excludeProductId),
             cancellationToken);
 
+    public Task<VariantSnapshot?> GetVariantSnapshotAsync(
+        Guid productVariantId,
+        CancellationToken cancellationToken = default)
+        => (from variant in dbContext.ProductVariants.AsNoTracking()
+            join product in dbContext.Products.AsNoTracking() on variant.ProductId equals product.Id
+            where variant.Id == productVariantId
+            select new VariantSnapshot(
+                product.Id,
+                variant.Id,
+                product.Name,
+                variant.Name,
+                variant.PromotionalPrice ?? variant.Price,
+                variant.StockQuantity,
+                variant.IsActive,
+                product.Status == ProductStatus.Published))
+            .FirstOrDefaultAsync(cancellationToken);
+
     public void Add(Product product) => dbContext.Products.Add(product);
 
     public Task SaveChangesAsync(CancellationToken cancellationToken = default)

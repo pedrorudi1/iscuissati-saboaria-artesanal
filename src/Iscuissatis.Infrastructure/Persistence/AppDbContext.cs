@@ -1,4 +1,5 @@
 using Iscuissatis.Domain.Catalog;
+using Iscuissatis.Domain.Sales;
 using Iscuissatis.Infrastructure.Identity;
 using Iscuissatis.Infrastructure.Persistence.Configurations;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -17,6 +18,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<ProductImage> ProductImages => Set<ProductImage>();
 
+    public DbSet<Cart> Carts => Set<Cart>();
+
+    public DbSet<CartItem> CartItems => Set<CartItem>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -28,5 +33,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         });
 
         builder.ApplyCatalog();
+        builder.ApplySales();
     }
 }
