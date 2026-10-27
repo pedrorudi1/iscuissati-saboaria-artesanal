@@ -1,0 +1,28 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Entrar";
+}
+
+<section class="auth">
+    <h1>Entrar no painel</h1>
+    <p class="auth__subtitle">Acesso restrito à equipe da Iscuissati's Saboaria Artesanal.</p>
+
+    <form method="post" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Model.ReturnUrl">
+        <div asp-validation-summary="ModelOnly" class="form__error" role="alert"></div>
+
+        <label asp-for="Email"></label>
+        <input asp-for="Email" autocomplete="username" inputmode="email" />
+        <span asp-validation-for="Email" class="form__error"></span>
+
+        <label asp-for="Password"></label>
+        <input asp-for="Password" autocomplete="current-password" />
+        <span asp-validation-for="Password" class="form__error"></span>
+
+        <label class="form__check">
+            <input asp-for="RememberMe" />
+            <span>Continuar conectado</span>
+        </label>
+
+        <button type="submit">Entrar</button>
+    </form>
+</section>

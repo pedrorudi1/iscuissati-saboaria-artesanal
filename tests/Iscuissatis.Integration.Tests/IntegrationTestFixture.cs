@@ -18,6 +18,9 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
         .WithPassword("tests-only")
         .Build();
 
+    public const string AdminEmail = "admin@teste.local";
+    public const string AdminPassword = "SenhaDeTeste123";
+
     public WebApplicationFactory<Program> Factory { get; private set; } = null!;
 
     public string ConnectionString => _database.GetConnectionString();
@@ -32,6 +35,9 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
             builder.UseSetting("ConnectionStrings:DefaultConnection", ConnectionString);
             builder.UseSetting("Database:MigrateOnStartup", "true");
             builder.UseSetting("Security:UseHttpsRedirection", "false");
+            builder.UseSetting("Seed:AdminEmail", AdminEmail);
+            builder.UseSetting("Seed:AdminPassword", AdminPassword);
+            builder.UseSetting("Seed:AdminFullName", "Administrador de Teste");
         });
 
         // Dispara o start do host (e as migrations) antes do primeiro teste.
