@@ -27,12 +27,14 @@ public class AdminCategoriesTests(IntegrationTestFixture fixture)
     public async Task Admin_creates_a_category_with_an_automatically_generated_slug()
     {
         var client = await AdminSession.SignInAsync(fixture);
+        var suffix = Guid.NewGuid().ToString("N")[..6];
+        var name = $"Sabonetes em Barra {suffix}";
 
         var response = await AuthHelper.PostWithAntiforgeryAsync(
             client, "/admin/categorias/nova", "/admin/categorias/nova",
             new Dictionary<string, string>
             {
-                ["Name"] = "Sabonetes em Barra",
+                ["Name"] = name,
                 ["Description"] = "Barras artesanais",
                 ["SortOrder"] = "1",
             });
@@ -42,12 +44,12 @@ public class AdminCategoriesTests(IntegrationTestFixture fixture)
 
         var list = await client.GetAsync("/admin/categorias");
         var html = System.Net.WebUtility.HtmlDecode(await list.Content.ReadAsStringAsync());
-        html.ShouldContain("Sabonetes em Barra");
+        html.ShouldContain(name);
 
         using var scope = fixture.Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var saved = await db.Categories.SingleAsync(category => category.Name == "Sabonetes em Barra");
-        saved.Slug.ShouldBe("sabonetes-em-barra");
+        var saved = await db.Categories.SingleAsync(category => category.Name == name);
+        saved.Slug.ShouldBe($"sabonetes-em-barra-{suffix}");
     }
 
     [Fact]
@@ -55,13 +57,16 @@ public class AdminCategoriesTests(IntegrationTestFixture fixture)
     {
         var client = await AdminSession.SignInAsync(fixture);
 
+        var suffix = Guid.NewGuid().ToString("N")[..6];
+        var name = $"Kits e Presentes {suffix}";
+
         foreach (var _ in Enumerable.Range(0, 2))
         {
             await AuthHelper.PostWithAntiforgeryAsync(
                 client, "/admin/categorias/nova", "/admin/categorias/nova",
                 new Dictionary<string, string>
                 {
-                    ["Name"] = "Kits e Presentes",
+                    ["Name"] = name,
                     ["Description"] = "",
                     ["SortOrder"] = "2",
                 });
@@ -70,12 +75,12 @@ public class AdminCategoriesTests(IntegrationTestFixture fixture)
         using var scope = fixture.Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var slugs = await db.Categories
-            .Where(category => category.Name == "Kits e Presentes")
+            .Where(category => category.Name == name)
             .Select(category => category.Slug)
             .OrderBy(slug => slug)
             .ToListAsync();
 
-        slugs.ShouldBe(["kits-e-presentes", "kits-e-presentes-2"]);
+        slugs.ShouldBe([$"kits-e-presentes-{suffix}", $"kits-e-presentes-{suffix}-2"]);
     }
 
     [Fact]
@@ -97,15 +102,16 @@ public class AdminCategoriesTests(IntegrationTestFixture fixture)
     {
         var client = await AdminSession.SignInAsync(fixture);
 
+        var name = $"Novidades {Guid.NewGuid():N}"[..20];
         await AuthHelper.PostWithAntiforgeryAsync(
             client, "/admin/categorias/nova", "/admin/categorias/nova",
-            new Dictionary<string, string> { ["Name"] = "Novidades", ["Description"] = "", ["SortOrder"] = "3" });
+            new Dictionary<string, string> { ["Name"] = name, ["Description"] = "", ["SortOrder"] = "3" });
 
         Guid id;
         using (var scope = fixture.Factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            id = await db.Categories.Where(category => category.Name == "Novidades")
+            id = await db.Categories.Where(category => category.Name == name)
                 .Select(category => category.Id).SingleAsync();
         }
 

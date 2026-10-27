@@ -64,11 +64,13 @@ public class AdminProductsTests(IntegrationTestFixture fixture)
                 ["Form.CategoryId"] = categoryId.ToString(),
             });
 
-        var found = await client.GetAsync("/admin/produtos?q=alecrim");
-        (await found.Content.ReadAsStringAsync()).ShouldContain("Alecrim e Hortelã");
+        var foundHtml = System.Net.WebUtility.HtmlDecode(
+            await (await client.GetAsync("/admin/produtos?q=alecrim")).Content.ReadAsStringAsync());
+        foundHtml.ShouldContain("Alecrim e Hortelã");
 
-        var missing = await client.GetAsync("/admin/produtos?q=lavanda");
-        (await missing.Content.ReadAsStringAsync()).ShouldNotContain("Alecrim e Hortelã");
+        var missingHtml = System.Net.WebUtility.HtmlDecode(
+            await (await client.GetAsync("/admin/produtos?q=zzz-nao-existe")).Content.ReadAsStringAsync());
+        missingHtml.ShouldNotContain("Alecrim e Hortelã");
     }
 
     [Fact]
@@ -123,7 +125,12 @@ public class AdminProductsTests(IntegrationTestFixture fixture)
                 ["NewVariant.StockQuantity"] = "3",
                 ["NewVariant.WeightGrams"] = "100",
             });
-        firstAdd.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+        if (firstAdd.StatusCode != HttpStatusCode.Redirect)
+        {
+            var body = await firstAdd.Content.ReadAsStringAsync();
+            throw new Xunit.Sdk.XunitException(
+                $"POST de variação devolveu {(int)firstAdd.StatusCode}. Corpo: {body[..Math.Min(3000, body.Length)]}");
+        }
 
         await AuthHelper.PostWithAntiforgeryAsync(
             client, $"/admin/produtos/{second}/editar", $"/admin/produtos/{second}/variacoes",
