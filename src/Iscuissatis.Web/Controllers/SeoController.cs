@@ -37,7 +37,7 @@ public class SeoController(ICatalogQueryService catalog) : Controller
         }
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
-        var settings = new XmlWriterSettings { Indent = true, Encoding = new UTF8Encoding(false) };
+        var settings = new XmlWriterSettings { Indent = true, Encoding = new UTF8Encoding(false), Async = true };
         using var stream = new MemoryStream();
         await using (var writer = XmlWriter.Create(stream, settings))
         {
