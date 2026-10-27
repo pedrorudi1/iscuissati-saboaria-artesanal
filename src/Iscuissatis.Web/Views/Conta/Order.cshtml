@@ -1,0 +1,54 @@
+@model Iscuissatis.Domain.Sales.Order
+@{
+    var statusLabel = Model.Status switch
+    {
+        Iscuissatis.Domain.Sales.OrderStatus.PendingPayment => "Aguardando pagamento",
+        Iscuissatis.Domain.Sales.OrderStatus.Paid => "Pago",
+        Iscuissatis.Domain.Sales.OrderStatus.Preparing => "Em preparo",
+        Iscuissatis.Domain.Sales.OrderStatus.Shipped => "Enviado",
+        Iscuissatis.Domain.Sales.OrderStatus.Delivered => "Entregue",
+        Iscuissatis.Domain.Sales.OrderStatus.Canceled => "Cancelado",
+        _ => "Reembolsado",
+    };
+}
+
+<section class="container-page py-10">
+    <nav aria-label="Você está aqui" class="text-xs text-muted">
+        <a class="hover:text-primary" href="/minha-conta">Minha conta</a>
+        <span> / </span>
+        <span>@Model.Number</span>
+    </nav>
+
+    <h1 class="mt-2 text-3xl text-primary">Pedido @Model.Number</h1>
+    <p class="mt-1 text-sm text-muted">@statusLabel · criado em @Model.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy 'às' HH:mm")</p>
+
+    <div class="card mt-6 max-w-3xl">
+        <ul class="space-y-3 text-sm">
+            @foreach (var item in Model.Items)
+            {
+                <li class="flex justify-between gap-3 border-b border-line pb-2">
+                    <span>@item.Quantity × @item.ProductName <span class="text-muted">(@item.VariantName)</span></span>
+                    <span class="whitespace-nowrap">R$ @item.LineTotal.ToString("N2")</span>
+                </li>
+            }
+        </ul>
+
+        <div class="mt-4 flex justify-between font-bold">
+            <span>Total</span>
+            <span>R$ @Model.Total.ToString("N2")</span>
+        </div>
+
+        <div class="mt-6 text-sm text-muted">
+            <p class="font-display uppercase tracking-[0.08em] text-xs text-ink">Entrega</p>
+            <p>@Model.ShippingAddress.Recipient</p>
+            <p>@Model.ShippingAddress.Street, @Model.ShippingAddress.Number @Model.ShippingAddress.Complement</p>
+            <p>@Model.ShippingAddress.District — @Model.ShippingAddress.City / @Model.ShippingAddress.State</p>
+            <p>CEP @Model.ShippingAddress.ZipCode</p>
+        </div>
+    </div>
+
+    <p class="mt-6 text-xs text-muted">
+        O pagamento por Pix entra na próxima fase. Até lá, este pedido fica aguardando pagamento.
+    </p>
+    <p class="mt-6"><a class="btn btn-outline" href="/minha-conta">Voltar aos pedidos</a></p>
+</section>

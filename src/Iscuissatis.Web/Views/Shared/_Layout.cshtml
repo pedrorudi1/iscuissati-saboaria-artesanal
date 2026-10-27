@@ -31,6 +31,14 @@
             <a class="nav-link" href="/#sobre">Sobre</a>
             <a class="nav-link" href="/#contato">Contato</a>
             <a class="nav-link" href="/sacola">Sacola</a>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a class="nav-link" href="/minha-conta">Minha conta</a>
+            }
+            else
+            {
+                <a class="nav-link" href="/criar-conta">Criar conta</a>
+            }
         </nav>
 
         <a class="btn btn-outline" href="/#contato">Falar com a saboaria</a>

@@ -54,6 +54,16 @@ public sealed class OrderRepository(AppDbContext dbContext) : IOrderRepository
             .Include(order => order.Items)
             .FirstOrDefaultAsync(order => order.Number == number, cancellationToken);
 
+    public async Task<IReadOnlyList<Order>> ListByCustomerAsync(
+        Guid customerId,
+        CancellationToken cancellationToken = default)
+        => await dbContext.Orders
+            .AsNoTracking()
+            .Include(order => order.Items)
+            .Where(order => order.CustomerId == customerId)
+            .OrderByDescending(order => order.CreatedAtUtc)
+            .ToListAsync(cancellationToken);
+
     public async Task ReleaseReservationsAsync(
         Guid orderId,
         DateTimeOffset now,

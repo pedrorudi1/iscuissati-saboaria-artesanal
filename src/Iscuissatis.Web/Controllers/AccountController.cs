@@ -9,7 +9,8 @@ namespace Iscuissatis.Web.Controllers;
 
 public class AccountController(
     SignInManager<ApplicationUser> signInManager,
-    UserManager<ApplicationUser> userManager) : Controller
+    UserManager<ApplicationUser> userManager,
+    Iscuissatis.Application.Sales.CartService cartService) : Controller
 {
     [HttpGet("/entrar")]
     [AllowAnonymous]
@@ -43,6 +44,8 @@ public class AccountController(
 
         if (result.Succeeded)
         {
+            await MergeGuestCartAsync();
+
             if (await RequiresTwoFactorSetupAsync(model.Email))
             {
                 return Redirect($"/admin/seguranca/2fa?returnUrl={Uri.EscapeDataString(model.ReturnUrl ?? "/admin")}");
@@ -115,9 +118,73 @@ public class AccountController(
         return RedirectToAction("Index", "Home");
     }
 
+    [HttpGet("/criar-conta")]
+    [AllowAnonymous]
+    public IActionResult Register() => View(new RegisterModel());
+
+    [HttpPost("/criar-conta")]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Register(RegisterModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var user = new ApplicationUser
+        {
+            UserName = model.Email,
+            Email = model.Email,
+            FullName = model.FullName.Trim(),
+            EmailConfirmed = true, // a confirmação por e-mail entra na fase de e-mails
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+        };
+
+        var created = await userManager.CreateAsync(user, model.Password);
+
+        if (!created.Succeeded)
+        {
+            foreach (var error in created.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return View(model);
+        }
+
+        await userManager.AddToRoleAsync(user, Roles.Cliente);
+        await signInManager.SignInAsync(user, isPersistent: false);
+        await MergeGuestCartAsync();
+
+        return RedirectToAction("Index", "Conta");
+    }
+
     [HttpGet("/acesso-negado")]
     [AllowAnonymous]
     public IActionResult AccessDenied() => View();
+
+    /// <summary>
+    /// Ao entrar na conta, a sacola do visitante passa para o cliente (spec 04, critério 5).
+    /// </summary>
+    private async Task MergeGuestCartAsync()
+    {
+        if (!Request.Cookies.TryGetValue(SacolaController.CookieName, out var anonymousId)
+            || string.IsNullOrWhiteSpace(anonymousId))
+        {
+            return;
+        }
+
+        var user = await userManager.GetUserAsync(User);
+
+        if (user is null || !Guid.TryParse(user.Id, out var customerId))
+        {
+            return;
+        }
+
+        await cartService.MergeAnonymousCartAsync(anonymousId, customerId);
+        Response.Cookies.Delete(SacolaController.CookieName);
+    }
 
     private async Task<bool> RequiresTwoFactorSetupAsync(string email)
     {
