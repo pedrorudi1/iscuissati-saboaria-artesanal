@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Iscuissatis.Application/Iscuissatis.Application.csproj" />
+    <Project Path="src/Iscuissatis.Domain/Iscuissatis.Domain.csproj" />
+    <Project Path="src/Iscuissatis.Infrastructure/Iscuissatis.Infrastructure.csproj" />
+    <Project Path="src/Iscuissatis.Web/Iscuissatis.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Iscuissatis.Domain.Tests/Iscuissatis.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

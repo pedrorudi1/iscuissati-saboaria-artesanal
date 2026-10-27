@@ -1,8 +1,15 @@
 bin/
 obj/
 .vs/
+.idea/
+.vscode/
 *.user
 .env
+.env.*
+!.env.example
 TestResults/
 coverage/
+coverage.*
 node_modules/
+*.db
+artifacts/
