@@ -132,7 +132,7 @@ public class AdminProductsTests(IntegrationTestFixture fixture)
                 $"POST de variação devolveu {(int)firstAdd.StatusCode}. Corpo: {body[..Math.Min(3000, body.Length)]}");
         }
 
-        await AuthHelper.PostWithAntiforgeryAsync(
+        var secondAdd = await AuthHelper.PostWithAntiforgeryAsync(
             client, $"/admin/produtos/{second}/editar", $"/admin/produtos/{second}/variacoes",
             new Dictionary<string, string>
             {
@@ -145,7 +145,18 @@ public class AdminProductsTests(IntegrationTestFixture fixture)
 
         var page = await client.GetAsync($"/admin/produtos/{second}/editar");
         var html = System.Net.WebUtility.HtmlDecode(await page.Content.ReadAsStringAsync());
-        html.ShouldContain("já está em uso");
+
+        if (!html.Contains("já está em uso", StringComparison.OrdinalIgnoreCase))
+        {
+            using var debugScope = fixture.Factory.Services.CreateScope();
+            var debugDb = debugScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var firstCount = await debugDb.ProductVariants.CountAsync(v => v.ProductId == first);
+            var secondCount = await debugDb.ProductVariants.CountAsync(v => v.ProductId == second);
+            throw new Xunit.Sdk.XunitException(
+                $"secondAdd={secondAdd.StatusCode} location={secondAdd.Headers.Location}; " +
+                $"variacoes first={firstCount} second={secondCount}; sku={sku}; " +
+                $"html trecho={(html.Length > 600 ? html[..600] : html).Replace("\n", " ")}");
+        }
     }
 
     private async Task<Guid> CreateCategoryAsync(string name)
