@@ -6,6 +6,7 @@ using Iscuissatis.Application.Sales;
 using Iscuissatis.Application.Storage;
 using Iscuissatis.Infrastructure.Persistence;
 using Iscuissatis.Infrastructure.Persistence.Repositories;
+using Iscuissatis.Infrastructure.Integrations;
 using Iscuissatis.Infrastructure.Storage;
 using System.Globalization;
 using Iscuissatis.Web.Infrastructure;
@@ -67,6 +68,11 @@ builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<OrderService>();
+builder.Services.AddHttpClient<IZipCodeLookup, ViaCepLookup>(client =>
+{
+    client.BaseAddress = new Uri("https://viacep.com.br/");
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
 builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection(StorageOptions.SectionName));
 builder.Services.AddSingleton<IFileStorage, LocalFileStorage>();
 builder.Services.AddSingleton<IImageProcessor, SkiaImageProcessor>();

@@ -90,6 +90,25 @@ public sealed class CartService(
         return cart;
     }
 
+    public async Task ClearCartAsync(Cart cart, CancellationToken cancellationToken = default)
+    {
+        cart.Clear(clock.GetUtcNow());
+        await carts.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task ClearAsync(string anonymousId, CancellationToken cancellationToken = default)
+    {
+        var cart = await carts.FindByAnonymousIdAsync(anonymousId, cancellationToken);
+
+        if (cart is null)
+        {
+            return;
+        }
+
+        cart.Clear(clock.GetUtcNow());
+        await carts.SaveChangesAsync(cancellationToken);
+    }
+
     /// <summary>
     /// Ao entrar na conta, a sacola anônima é absorvida pela sacola do cliente.
     /// </summary>

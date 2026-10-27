@@ -1,0 +1,68 @@
+@model Iscuissatis.Domain.Sales.Order
+@{
+    var statusLabel = Model.Status switch
+    {
+        Iscuissatis.Domain.Sales.OrderStatus.PendingPayment => "Aguardando pagamento",
+        Iscuissatis.Domain.Sales.OrderStatus.Paid => "Pago",
+        Iscuissatis.Domain.Sales.OrderStatus.Preparing => "Em preparo",
+        Iscuissatis.Domain.Sales.OrderStatus.Shipped => "Enviado",
+        Iscuissatis.Domain.Sales.OrderStatus.Delivered => "Entregue",
+        Iscuissatis.Domain.Sales.OrderStatus.Canceled => "Cancelado",
+        _ => "Reembolsado",
+    };
+}
+
+<section class="container-page py-10">
+    <p class="eyebrow">Pedido criado</p>
+    <h1 class="mt-2 text-3xl md:text-[38px] text-primary">Obrigado!</h1>
+
+    <div class="card mt-6 max-w-3xl">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <p class="text-[11px] uppercase tracking-[0.18em] text-muted">Número do pedido</p>
+                <p class="font-display text-2xl">@Model.Number</p>
+            </div>
+            <span class="rounded border border-line px-3 py-2 text-xs uppercase tracking-[0.1em] text-muted">
+                @statusLabel
+            </span>
+        </div>
+
+        <ul class="mt-6 space-y-3 text-sm">
+            @foreach (var item in Model.Items)
+            {
+                <li class="flex justify-between gap-3 border-b border-line pb-2">
+                    <span>@item.Quantity × @item.ProductName <span class="text-muted">(@item.VariantName)</span></span>
+                    <span class="whitespace-nowrap">R$ @item.LineTotal.ToString("N2")</span>
+                </li>
+            }
+        </ul>
+
+        <div class="mt-4 flex justify-between font-bold">
+            <span>Total</span>
+            <span>R$ @Model.Total.ToString("N2")</span>
+        </div>
+
+        <div class="mt-6 text-sm text-muted">
+            <p class="font-display uppercase tracking-[0.08em] text-xs text-ink">Entrega</p>
+            <p>@Model.ShippingAddress.Recipient</p>
+            <p>@Model.ShippingAddress.Street, @Model.ShippingAddress.Number @Model.ShippingAddress.Complement</p>
+            <p>@Model.ShippingAddress.District — @Model.ShippingAddress.City / @Model.ShippingAddress.State</p>
+            <p>CEP @Model.ShippingAddress.ZipCode</p>
+        </div>
+    </div>
+
+    <div class="card mt-6 max-w-3xl">
+        <h2 class="text-lg">Próximo passo: pagamento</h2>
+        <p class="mt-2 text-sm text-muted">
+            O estoque está reservado por 30 minutos. A cobrança por Pix entra na Fase 5 do projeto;
+            até lá, este pedido fica registrado como <strong>aguardando pagamento</strong> e não é cobrado.
+        </p>
+        <p class="mt-4 text-xs text-muted">
+            Guarde o número <strong>@Model.Number</strong> para acompanhar.
+        </p>
+    </div>
+
+    <p class="mt-8">
+        <a class="btn btn-outline" href="/sabonetes">Continuar comprando</a>
+    </p>
+</section>

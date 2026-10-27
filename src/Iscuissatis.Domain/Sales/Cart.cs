@@ -172,6 +172,12 @@ public sealed class Cart
         UpdatedAtUtc = now;
     }
 
+    public void Clear(DateTimeOffset now)
+    {
+        _items.Clear();
+        UpdatedAtUtc = now;
+    }
+
     public void AttachToCustomer(Guid customerId, DateTimeOffset now)
     {
         if (customerId == Guid.Empty)
