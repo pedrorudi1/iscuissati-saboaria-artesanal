@@ -3,8 +3,8 @@ name: ci
 on:
   push:
     branches: [main]
+  # Qualquer PR, inclusive empilhado (base diferente de main), precisa de CI.
   pull_request:
-    branches: [main]
   workflow_dispatch:
 
 concurrency:
