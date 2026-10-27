@@ -20,6 +20,8 @@ public interface IOrderRepository
 
     Task<Order?> FindByNumberAsync(string number, CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<Order>> ListByCustomerAsync(Guid customerId, CancellationToken cancellationToken = default);
+
     /// <summary>Libera as reservas ativas do pedido e devolve o estoque.</summary>
     Task ReleaseReservationsAsync(Guid orderId, DateTimeOffset now, CancellationToken cancellationToken = default);
 
