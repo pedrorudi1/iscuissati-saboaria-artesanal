@@ -22,6 +22,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<CartItem> CartItems => Set<CartItem>();
 
+    public DbSet<Order> Orders => Set<Order>();
+
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+
+    public DbSet<StockReservation> StockReservations => Set<StockReservation>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
