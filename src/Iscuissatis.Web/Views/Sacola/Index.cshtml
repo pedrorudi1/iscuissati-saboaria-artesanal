@@ -1,0 +1,86 @@
+@model Iscuissatis.Domain.Sales.Cart
+
+<section class="container-page py-10">
+    <h1 class="text-3xl md:text-[38px] text-primary">Sua sacola</h1>
+
+    @if (ViewData["Error"] is string error && !string.IsNullOrWhiteSpace(error))
+    {
+        <p class="card mt-4 border-l-4 border-l-primary text-sm" role="alert">@error</p>
+    }
+
+    @if (Model.Items.Count == 0)
+    {
+        <div class="card mt-6 text-center">
+            <p class="font-display uppercase tracking-[0.08em] text-sm text-muted">Sua sacola está vazia</p>
+            <p class="mt-2 text-sm text-muted">Escolha um sabonete para começar.</p>
+            <p class="mt-4"><a class="btn btn-primary" href="/sabonetes">Ver sabonetes</a></p>
+        </div>
+    }
+    else
+    {
+        <div class="mt-6 grid gap-8 lg:grid-cols-[1.6fr_1fr] lg:items-start">
+            <div class="card overflow-x-auto p-0">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-bg">
+                        <tr class="font-display uppercase tracking-[0.08em] text-[11px] text-muted">
+                            <th scope="col" class="px-5 py-3">Item</th>
+                            <th scope="col" class="px-5 py-3">Preço</th>
+                            <th scope="col" class="px-5 py-3">Quantidade</th>
+                            <th scope="col" class="px-5 py-3 text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr class="border-t border-line align-top">
+                            <td class="px-5 py-4">
+                                <span class="font-display uppercase tracking-[0.04em]">@item.ProductName</span>
+                                <span class="block text-xs text-muted">@item.VariantName</span>
+                            </td>
+                            <td class="px-5 py-4">R$ @item.UnitPrice.ToString("N2")</td>
+                            <td class="px-5 py-4">
+                                <form method="post" asp-action="Update" class="flex items-center gap-2">
+                                    <input type="hidden" name="variantId" value="@item.ProductVariantId"/>
+                                    <input name="quantity" type="number" min="0" max="99" value="@item.Quantity"
+                                           class="w-20 rounded border border-field bg-surface px-2 py-1" aria-label="Quantidade de @item.ProductName"/>
+                                    <button type="submit" class="text-xs underline text-muted hover:text-primary">Atualizar</button>
+                                </form>
+                                <form method="post" asp-action="Remove" class="mt-2">
+                                    <input type="hidden" name="variantId" value="@item.ProductVariantId"/>
+                                    <button type="submit" class="text-xs underline text-primary">Remover</button>
+                                </form>
+                            </td>
+                            <td class="px-5 py-4 text-right font-bold">R$ @item.LineTotal.ToString("N2")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+
+            <aside class="card">
+                <h2 class="text-lg">Resumo</h2>
+                <dl class="mt-4 space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <dt class="text-muted">Itens</dt>
+                        <dd>@Model.ItemCount</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-muted">Subtotal</dt>
+                        <dd>R$ @Model.Subtotal.ToString("N2")</dd>
+                    </div>
+                    <div class="flex justify-between border-t border-line pt-2 font-bold">
+                        <dt>Total</dt>
+                        <dd>R$ @Model.Subtotal.ToString("N2")</dd>
+                    </div>
+                </dl>
+
+                <p class="mt-4 text-xs text-muted">
+                    Frete e pagamento entram na próxima etapa do checkout.
+                </p>
+                <button type="button" class="btn btn-primary mt-4 w-full" disabled aria-disabled="true">
+                    Finalizar compra (em breve)
+                </button>
+            </aside>
+        </div>
+    }
+</section>

@@ -16,6 +16,10 @@ public interface IProductRepository
 
     Task<bool> SkuExistsAsync(string sku, Guid? excludeProductId = null, CancellationToken cancellationToken = default);
 
+    Task<VariantSnapshot?> GetVariantSnapshotAsync(
+        Guid productVariantId,
+        CancellationToken cancellationToken = default);
+
     void Add(Product product);
 
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
