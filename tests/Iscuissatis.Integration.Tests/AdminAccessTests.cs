@@ -61,7 +61,7 @@ public class AdminAccessTests(IntegrationTestFixture fixture)
         var response = await client.GetAsync("/admin");
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        (await response.Content.ReadAsStringAsync()).ShouldContain("Painel da loja");
+        (await response.Content.ReadAsStringAsync()).ShouldContain("Área administrativa");
     }
 
     private async Task EnsureCustomerAsync()
