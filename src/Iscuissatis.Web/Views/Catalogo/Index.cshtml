@@ -1,0 +1,87 @@
+@using Iscuissatis.Application.Catalog.Public
+@model Iscuissatis.Web.Models.CatalogListViewModel
+@{
+    var title = Model.CurrentCategoryName ?? "Todos os sabonetes";
+}
+
+<section class="container-page py-10">
+    <nav aria-label="Você está aqui" class="text-xs text-muted">
+        <a class="hover:text-primary" href="/">Início</a>
+        <span aria-hidden="true"> / </span>
+        <span>Sabonetes</span>
+        @if (Model.CurrentCategoryName is not null)
+        {
+            <span aria-hidden="true"> / </span>
+            <span>@Model.CurrentCategoryName</span>
+        }
+    </nav>
+
+    <h1 class="mt-4 text-3xl md:text-[38px] text-primary">@title</h1>
+    <p class="mt-2 text-sm text-muted">
+        @Model.Result.TotalItems produto(s) encontrado(s)
+        @if (!string.IsNullOrWhiteSpace(Model.Search))
+        {
+            <span>para “@Model.Search”</span>
+        }
+    </p>
+
+    <form method="get" action="/sabonetes" class="card mt-6 grid gap-4 sm:grid-cols-[1fr_200px_200px_auto] sm:items-end">
+        <div class="field !mb-0">
+            <label for="q">Buscar</label>
+            <input id="q" name="q" value="@Model.Search" placeholder="lavanda, calêndula…"/>
+        </div>
+        <div class="field !mb-0">
+            <label for="categoria">Categoria</label>
+            <select id="categoria" name="categoria">
+                <option value="">Todas</option>
+                @foreach (var category in Model.Categories)
+                {
+                    <option value="@category.Slug" selected="@(Model.CategorySlug == category.Slug)">@category.Name</option>
+                }
+            </select>
+        </div>
+        <div class="field !mb-0">
+            <label for="ordem">Ordenar por</label>
+            <select id="ordem" name="ordem">
+                <option value="0" selected="@(Model.Sort == ProductSort.Relevance)">Relevância</option>
+                <option value="1" selected="@(Model.Sort == ProductSort.PriceAscending)">Menor preço</option>
+                <option value="2" selected="@(Model.Sort == ProductSort.PriceDescending)">Maior preço</option>
+                <option value="3" selected="@(Model.Sort == ProductSort.Newest)">Novidades</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+    </form>
+
+    @if (Model.Result.Items.Count == 0)
+    {
+        <div class="card mt-8 text-center">
+            <p class="font-display uppercase tracking-[0.08em] text-sm text-muted">Nada encontrado</p>
+            <p class="mt-2 text-sm text-muted">Tente outra palavra ou veja todas as categorias.</p>
+            <p class="mt-4"><a class="btn btn-outline" href="/sabonetes">Ver tudo</a></p>
+        </div>
+    }
+    else
+    {
+        <ul class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            @foreach (var product in Model.Result.Items)
+            {
+                <li><partial name="_ProductCard" model="product"/></li>
+            }
+        </ul>
+
+        @if (Model.Result.TotalPages > 1)
+        {
+            <nav aria-label="Paginação" class="mt-10 flex items-center justify-center gap-3">
+                @if (Model.Result.HasPrevious)
+                {
+                    <a class="btn btn-outline" href="/sabonetes?pagina=@(Model.Result.Page - 1)&categoria=@Model.CategorySlug&q=@Model.Search&ordem=@((int)Model.Sort)">Anterior</a>
+                }
+                <span class="text-sm text-muted">Página @Model.Result.Page de @Model.Result.TotalPages</span>
+                @if (Model.Result.HasNext)
+                {
+                    <a class="btn btn-outline" href="/sabonetes?pagina=@(Model.Result.Page + 1)&categoria=@Model.CategorySlug&q=@Model.Search&ordem=@((int)Model.Sort)">Próxima</a>
+                }
+            </nav>
+        }
+    }
+</section>

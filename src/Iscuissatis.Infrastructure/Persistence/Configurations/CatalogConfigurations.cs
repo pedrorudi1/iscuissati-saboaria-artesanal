@@ -31,6 +31,7 @@ public static class CatalogConfigurations
             entity.Property(product => product.Ingredients).HasMaxLength(2000);
             entity.Property(product => product.HowToUse).HasMaxLength(2000);
             entity.Property(product => product.Precautions).HasMaxLength(2000);
+            entity.Property(product => product.SearchTerms).HasMaxLength(600).IsRequired();
             entity.HasIndex(product => product.Slug).IsUnique();
             entity.HasIndex(product => new { product.CategoryId, product.Status });
 

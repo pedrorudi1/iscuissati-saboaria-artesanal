@@ -1,5 +1,7 @@
+@model Iscuissatis.Web.Models.HomeViewModel
 @{
     ViewData["Title"] = "Sabonetes artesanais";
+    ViewData["Description"] = "Sabonetes artesanais feitos à mão, em pequenos lotes, com ingredientes naturais. Tatuí, SP.";
 }
 
 <section class="container-page grid items-center gap-12 py-12 md:grid-cols-2 md:py-16">
@@ -13,7 +15,7 @@
             escolhidas com cuidado. Do banho rápido ao presente.
         </p>
         <div class="mt-8 flex flex-wrap gap-3">
-            <a class="btn btn-primary" href="#categorias">Ver sabonetes</a>
+            <a class="btn btn-primary" href="/sabonetes">Ver sabonetes</a>
             <a class="btn btn-outline" href="#sobre">Nossa história</a>
         </div>
     </div>
@@ -46,36 +48,60 @@
     </ul>
 </section>
 
-<section id="categorias" class="container-page py-14">
-    <div class="divider-leaf" aria-hidden="true">
-        <span class="eyebrow">Categorias</span>
-    </div>
-    <h2 class="mt-4 text-center text-3xl md:text-[34px]">Escolha por categoria</h2>
+@if (Model.Categories.Count > 0)
+{
+    <section id="categorias" class="container-page py-14">
+        <div class="divider-leaf" aria-hidden="true">
+            <span class="eyebrow">Categorias</span>
+        </div>
+        <h2 class="mt-4 text-center text-3xl md:text-[34px]">Escolha por categoria</h2>
 
-    <ul class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <li class="card">
-            <h3 class="text-xl">Sabonetes em barra</h3>
-            <p class="mt-2 text-sm text-muted">Lavanda, alecrim, calêndula, aveia e mel.</p>
-            <p class="mt-4 text-xs font-bold uppercase tracking-[0.1em] text-olive-dark">Catálogo em preparação</p>
-        </li>
-        <li class="card">
-            <h3 class="text-xl">Kits e presentes</h3>
-            <p class="mt-2 text-sm text-muted">Combinações para presentear com embalagem especial.</p>
-            <p class="mt-4 text-xs font-bold uppercase tracking-[0.1em] text-olive-dark">Em breve</p>
-        </li>
-        <li class="card">
-            <h3 class="text-xl">Novidades</h3>
-            <p class="mt-2 text-sm text-muted">Novas fragrâncias e linhas, sempre em pequenos lotes.</p>
-            <p class="mt-4 text-xs font-bold uppercase tracking-[0.1em] text-olive-dark">Em breve</p>
-        </li>
-    </ul>
+        <ul class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            @foreach (var category in Model.Categories)
+            {
+                <li class="card">
+                    <h3 class="text-xl">
+                        <a class="hover:text-primary" href="/sabonetes?categoria=@category.Slug">@category.Name</a>
+                    </h3>
+                    <p class="mt-2 text-sm text-muted">
+                        @category.ProductCount produto(s) publicado(s)
+                    </p>
+                    <p class="mt-4">
+                        <a class="text-xs underline text-primary" href="/sabonetes?categoria=@category.Slug">Ver categoria</a>
+                    </p>
+                </li>
+            }
+        </ul>
+    </section>
+}
 
-    <p class="mt-8 text-center text-sm text-muted">
-        O catálogo com preços e disponibilidade entra na próxima fase do projeto.
-    </p>
+<section class="container-page py-6">
+    @if (Model.Featured.Count > 0)
+    {
+        <h2 class="text-center text-3xl md:text-[34px]">Novidades da saboaria</h2>
+        <ul class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            @foreach (var product in Model.Featured)
+            {
+                <li><partial name="_ProductCard" model="product"/></li>
+            }
+        </ul>
+        <p class="mt-8 text-center">
+            <a class="btn btn-primary" href="/sabonetes">Ver todos os sabonetes</a>
+        </p>
+    }
+    else
+    {
+        <div class="card text-center">
+            <p class="font-display uppercase tracking-[0.08em] text-sm text-muted">Catálogo em preparação</p>
+            <p class="mt-2 text-sm text-muted">
+                Os primeiros sabonetes estão sendo cadastrados. Enquanto isso, fale com a saboaria
+                para saber das novidades.
+            </p>
+        </div>
+    }
 </section>
 
-<section id="sobre" class="bg-olive-dark text-surface">
+<section id="sobre" class="bg-olive-dark text-surface mt-10">
     <div class="container-page grid gap-8 py-16 md:grid-cols-[1.1fr_0.9fr] md:items-center">
         <div>
             <p class="eyebrow text-surface/80">Uma saboaria artesanal</p>
@@ -84,9 +110,6 @@
                 A Iscuissati's nasceu do cuidado com o simples: um banho bom, um cheiro que lembra casa,
                 um presente que não precisa ser caro para ser especial. Tudo é feito à mão, em lotes
                 pequenos, acompanhando o tempo dos ingredientes.
-            </p>
-            <p class="mt-4 max-w-prose text-surface/90">
-                Texto institucional definitivo será publicado na fase de conteúdo.
             </p>
         </div>
         <div class="flex justify-center md:justify-end">

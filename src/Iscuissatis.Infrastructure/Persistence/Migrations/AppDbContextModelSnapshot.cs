@@ -101,6 +101,11 @@ namespace Iscuissatis.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset?>("PublishedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("SearchTerms")
+                        .IsRequired()
+                        .HasMaxLength(600)
+                        .HasColumnType("character varying(600)");
+
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(180)

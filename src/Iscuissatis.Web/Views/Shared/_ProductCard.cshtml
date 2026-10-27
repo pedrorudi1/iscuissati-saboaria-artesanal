@@ -1,0 +1,50 @@
+@model Iscuissatis.Application.Catalog.Public.ProductCard
+
+<article class="card flex flex-col overflow-hidden !p-0">
+    <a href="/produto/@Model.Slug" class="block bg-bg" tabindex="-1" aria-hidden="true">
+        @if (!string.IsNullOrWhiteSpace(Model.ImagePath))
+        {
+            <img src="@Model.ImagePath" alt="@Model.ImageAlt"
+                 width="480" height="360" loading="lazy"
+                 class="aspect-[4/3] w-full object-cover"/>
+        }
+        else
+        {
+            <span class="flex aspect-[4/3] w-full items-center justify-center text-xs uppercase tracking-[0.18em] text-muted">
+                sem foto
+            </span>
+        }
+    </a>
+
+    <div class="flex flex-1 flex-col p-5">
+        <p class="text-[11px] uppercase tracking-[0.14em] text-muted">@Model.CategoryName</p>
+        <h3 class="mt-1 text-lg leading-tight">
+            <a href="/produto/@Model.Slug" class="hover:text-primary">@Model.Name</a>
+        </h3>
+
+        <p class="mt-3 font-bold text-ink">
+            @if (Model.PriceFrom > 0)
+            {
+                <span class="text-xs font-normal text-muted">a partir de</span>
+                <span> R$ @Model.PriceFrom.ToString("N2")</span>
+            }
+            else
+            {
+                <span class="text-sm text-muted">Preço a definir</span>
+            }
+        </p>
+
+        <div class="mt-auto pt-4">
+            @if (Model.IsSoldOut)
+            {
+                <span class="inline-block rounded border border-line px-3 py-2 text-xs uppercase tracking-[0.1em] text-muted">
+                    Esgotado
+                </span>
+            }
+            else
+            {
+                <a class="btn btn-outline w-full" href="/produto/@Model.Slug">Ver produto</a>
+            }
+        </div>
+    </div>
+</article>
