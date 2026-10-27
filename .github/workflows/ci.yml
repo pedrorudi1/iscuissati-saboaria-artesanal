@@ -40,6 +40,7 @@ jobs:
       - name: Test
         run: >
           dotnet test --no-build --configuration Release
+          --filter "FullyQualifiedName!~Iscuissatis.E2E"
           --collect:"XPlat Code Coverage"
           --results-directory TestResults
           --logger "trx;LogFileName=test-results.trx"
@@ -50,4 +51,67 @@ jobs:
         with:
           name: test-results
           path: TestResults
+          retention-days: 7
+
+
+  e2e:
+    name: e2e
+    runs-on: ubuntu-latest
+    needs: build-test
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: iscuissatis
+          POSTGRES_USER: iscuissatis
+          POSTGRES_PASSWORD: ci-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U iscuissatis -d iscuissatis"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=iscuissatis;Username=iscuissatis;Password=ci-only-password"
+      Database__MigrateOnStartup: "true"
+      Database__SeedDemo: "true"
+      Security__UseHttpsRedirection: "false"
+      Seed__AdminEmail: "admin@ci.local"
+      Seed__AdminPassword: "SenhaDeCi123"
+      ASPNETCORE_URLS: "http://127.0.0.1:5000"
+      E2E_BASE_URL: "http://127.0.0.1:5000"
+      E2E_ARTIFACTS: "artifacts/e2e"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build
+        run: dotnet build --configuration Release
+
+      - name: Install Playwright browsers
+        run: pwsh tests/Iscuissatis.E2E.Tests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+      - name: Start application
+        run: |
+          nohup dotnet run --project src/Iscuissatis.Web --configuration Release --no-build --urls http://127.0.0.1:5000 > app.log 2>&1 &
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5000/health || true)
+            if [ "$code" = "200" ]; then echo "app up"; break; fi
+            sleep 2
+          done
+          curl -s -o /dev/null -w "health: %{http_code}\n" http://127.0.0.1:5000/health
+
+      - name: Run E2E
+        run: dotnet test tests/Iscuissatis.E2E.Tests --configuration Release --no-build --logger "trx;LogFileName=e2e.trx"
+
+      - name: Upload E2E artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-artifacts
+          path: |
+            artifacts/e2e
+            app.log
           retention-days: 7

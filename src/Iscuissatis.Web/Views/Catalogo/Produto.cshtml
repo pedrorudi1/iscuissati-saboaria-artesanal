@@ -119,9 +119,20 @@
                             </li>
                         }
                     </ul>
-                    <p class="mt-3 text-xs text-muted">
-                        A compra (carrinho e Pix) entra na próxima fase do projeto.
-                    </p>
+                    @{
+                        var purchasable = Model.Variants.FirstOrDefault(variant => variant.StockQuantity > 0);
+                    }
+                    @if (purchasable is not null)
+                    {
+                        <form method="post" asp-controller="Sacola" asp-action="Add" class="mt-4">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="variantId" value="@purchasable.Id"/>
+                            <input type="hidden" name="quantity" value="1"/>
+                            <input type="hidden" name="returnUrl" value="/sacola"/>
+                            <button type="submit" class="btn btn-primary w-full">Adicionar à sacola</button>
+                        </form>
+                        <p class="mt-2 text-xs text-muted">Pagamento por Pix entra na próxima fase; a sacola já funciona.</p>
+                    }
                 </div>
             }
 

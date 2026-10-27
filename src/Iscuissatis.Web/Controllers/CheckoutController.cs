@@ -153,6 +153,21 @@ public class CheckoutController(
         }
     }
 
+    [HttpGet("/checkout/frete")]
+    public async Task<IActionResult> Frete(string cep, CancellationToken cancellationToken)
+    {
+        var cart = await LoadCartAsync(cancellationToken);
+
+        if (cart is null || cart.Items.Count == 0)
+        {
+            return PartialView("_OpcoesEntrega", Array.Empty<Iscuissatis.Application.Shipping.ShippingOption>());
+        }
+
+        var options = await QuoteAsync(cart, cep, cancellationToken);
+
+        return PartialView("_OpcoesEntrega", options);
+    }
+
     [HttpGet("/checkout/cep/{zipCode}")]
     public async Task<IActionResult> LookupZipCode(string zipCode, CancellationToken cancellationToken)
     {
