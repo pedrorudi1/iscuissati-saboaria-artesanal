@@ -1,6 +1,8 @@
 using Iscuissatis.Application.Identity;
 using Iscuissatis.Infrastructure.Identity;
+using Iscuissatis.Application.Catalog;
 using Iscuissatis.Infrastructure.Persistence;
+using Iscuissatis.Infrastructure.Persistence.Repositories;
 using Iscuissatis.Web.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -51,6 +53,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddAuthorization();
 builder.Services.Configure<SeedOptions>(builder.Configuration.GetSection(SeedOptions.SectionName));
 builder.Services.AddScoped<IdentitySeeder>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<CategoryService>();
 builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddHealthChecks()

@@ -6,6 +6,7 @@
     <Project Path="src/Iscuissatis.Web/Iscuissatis.Web.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Iscuissatis.Application.Tests/Iscuissatis.Application.Tests.csproj" />
     <Project Path="tests/Iscuissatis.Domain.Tests/Iscuissatis.Domain.Tests.csproj" />
     <Project Path="tests/Iscuissatis.Integration.Tests/Iscuissatis.Integration.Tests.csproj" />
   </Folder>

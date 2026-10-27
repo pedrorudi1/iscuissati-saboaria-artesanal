@@ -41,7 +41,8 @@ public sealed class Category
         string name,
         DateTimeOffset now,
         string? description = null,
-        int sortOrder = 0)
+        int sortOrder = 0,
+        string? slug = null)
     {
         var trimmed = (name ?? string.Empty).Trim();
 
@@ -55,7 +56,11 @@ public sealed class Category
             throw new DomainException("A ordem da categoria não pode ser negativa.");
         }
 
-        return new Category(trimmed, Iscuissatis.Domain.Common.Slug.Create(trimmed).Value, description, sortOrder, now);
+        var finalSlug = string.IsNullOrWhiteSpace(slug)
+            ? Iscuissatis.Domain.Common.Slug.Create(trimmed).Value
+            : Iscuissatis.Domain.Common.Slug.Create(slug.Trim()).Value;
+
+        return new Category(trimmed, finalSlug, description, sortOrder, now);
     }
 
     public void Rename(string name, DateTimeOffset now)
@@ -68,6 +73,12 @@ public sealed class Category
         }
 
         Name = trimmed;
+        UpdatedAtUtc = now;
+    }
+
+    public void SetDescription(string? description, DateTimeOffset now)
+    {
+        Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
         UpdatedAtUtc = now;
     }
 
