@@ -1,0 +1,8 @@
+bin/
+obj/
+.vs/
+*.user
+.env
+TestResults/
+coverage/
+node_modules/
