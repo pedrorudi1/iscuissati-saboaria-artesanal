@@ -28,6 +28,7 @@ public class CheckoutTests(IntegrationTestFixture fixture)
                 ["City"] = "Tatuí",
                 ["State"] = "SP",
                 ["GuestEmail"] = email,
+                ["ShippingCode"] = "retirada",
             });
 
         response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
@@ -88,6 +89,7 @@ public class CheckoutTests(IntegrationTestFixture fixture)
                 ["City"] = "Tatuí",
                 ["State"] = "SP",
                 ["GuestEmail"] = email,
+                ["ShippingCode"] = "retirada",
             });
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
