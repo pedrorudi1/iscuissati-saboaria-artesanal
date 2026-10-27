@@ -1,0 +1,168 @@
+@using System.Text.Json
+@model Iscuissatis.Application.Catalog.Public.ProductDetail
+@{
+    var primaryImage = Model.Images.FirstOrDefault();
+    var availability = Model.IsSoldOut ? "https://schema.org/OutOfStock" : "https://schema.org/InStock";
+
+    var jsonLd = JsonSerializer.Serialize(new Dictionary<string, object?>
+    {
+        ["@context"] = "https://schema.org",
+        ["@type"] = "Product",
+        ["name"] = Model.Name,
+        ["description"] = Model.Description ?? Model.Name,
+        ["image"] = Model.Images.Select(image => image.Path).ToArray(),
+        ["sku"] = Model.Variants.FirstOrDefault()?.Sku,
+        ["category"] = Model.CategoryName,
+        ["offers"] = new Dictionary<string, object?>
+        {
+            ["@type"] = "Offer",
+            ["priceCurrency"] = "BRL",
+            ["price"] = Model.PriceFrom.ToString("F2"),
+            ["availability"] = availability,
+        },
+    });
+}
+
+@section Head {
+    <link rel="canonical" href="/produto/@Model.Slug"/>
+    <meta property="og:type" content="product"/>
+    <meta property="og:title" content="@Model.Name"/>
+    <meta property="og:description" content="@(Model.Description ?? Model.Name)"/>
+    @if (primaryImage is not null)
+    {
+        <meta property="og:image" content="@primaryImage.Path"/>
+    }
+    <script type="application/ld+json">@Html.Raw(jsonLd)</script>
+}
+
+<section class="container-page py-10">
+    <nav aria-label="Você está aqui" class="text-xs text-muted">
+        <a class="hover:text-primary" href="/">Início</a>
+        <span aria-hidden="true"> / </span>
+        <a class="hover:text-primary" href="/sabonetes">Sabonetes</a>
+        <span aria-hidden="true"> / </span>
+        <a class="hover:text-primary" href="/sabonetes?categoria=@Model.CategorySlug">@Model.CategoryName</a>
+    </nav>
+
+    <div class="mt-6 grid gap-10 md:grid-cols-2">
+        <div>
+            @if (primaryImage is not null)
+            {
+                <img src="@primaryImage.Path" alt="@primaryImage.AltText"
+                     width="@primaryImage.Width" height="@primaryImage.Height"
+                     class="w-full rounded-card border border-line object-cover"/>
+            }
+            else
+            {
+                <div class="flex aspect-square items-center justify-center rounded-card border border-line bg-surface text-sm uppercase tracking-[0.18em] text-muted">
+                    sem foto
+                </div>
+            }
+
+            @if (Model.Images.Count > 1)
+            {
+                <ul class="mt-4 grid grid-cols-4 gap-3">
+                    @foreach (var image in Model.Images.Skip(1))
+                    {
+                        <li>
+                            <img src="@image.Path" alt="@image.AltText" width="120" height="120"
+                                 loading="lazy" class="aspect-square w-full rounded border border-line object-cover"/>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+
+        <div>
+            <p class="eyebrow">@Model.CategoryName</p>
+            <h1 class="mt-2 text-3xl md:text-[38px] text-primary">@Model.Name</h1>
+
+            <p class="mt-4 font-bold text-2xl">
+                @if (Model.PriceFrom > 0)
+                {
+                    <span class="text-sm font-normal text-muted">a partir de</span>
+                    <span> R$ @Model.PriceFrom.ToString("N2")</span>
+                }
+                else
+                {
+                    <span class="text-lg text-muted">Preço a definir</span>
+                }
+            </p>
+
+            @if (Model.IsSoldOut)
+            {
+                <p class="mt-4 inline-block rounded border border-line px-3 py-2 text-xs uppercase tracking-[0.1em] text-muted">
+                    Esgotado
+                </p>
+                <p class="mt-2 text-sm text-muted">Este produto volta ao estoque em breve.</p>
+            }
+
+            @if (Model.Variants.Count > 0)
+            {
+                <div class="mt-6">
+                    <h2 class="text-sm uppercase tracking-[0.1em] text-muted">Opções</h2>
+                    <ul class="mt-3 space-y-2">
+                        @foreach (var variant in Model.Variants)
+                        {
+                            <li class="flex items-center justify-between rounded border border-line bg-surface px-4 py-3">
+                                <span class="font-display uppercase tracking-[0.04em] text-sm">@variant.Name</span>
+                                <span class="text-sm @(variant.StockQuantity == 0 ? "text-muted" : "text-ink")">
+                                    @if (variant.StockQuantity == 0)
+                                    {
+                                        <span>esgotado</span>
+                                    }
+                                    else
+                                    {
+                                        <span>R$ @variant.EffectivePrice.ToString("N2")</span>
+                                    }
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                    <p class="mt-3 text-xs text-muted">
+                        A compra (carrinho e Pix) entra na próxima fase do projeto.
+                    </p>
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Model.Description))
+            {
+                <p class="mt-8 text-muted">@Model.Description</p>
+            }
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Ingredients) || !string.IsNullOrWhiteSpace(Model.HowToUse) || !string.IsNullOrWhiteSpace(Model.Precautions) || Model.NetWeightGrams is not null)
+    {
+        <section class="mt-12 grid gap-6 md:grid-cols-3">
+            @if (!string.IsNullOrWhiteSpace(Model.Ingredients))
+            {
+                <div class="card">
+                    <h2 class="text-lg">Ingredientes</h2>
+                    <p class="mt-2 text-sm text-muted">@Model.Ingredients</p>
+                </div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.HowToUse))
+            {
+                <div class="card">
+                    <h2 class="text-lg">Modo de uso</h2>
+                    <p class="mt-2 text-sm text-muted">@Model.HowToUse</p>
+                </div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.Precautions) || Model.NetWeightGrams is not null)
+            {
+                <div class="card">
+                    <h2 class="text-lg">Precauções</h2>
+                    @if (!string.IsNullOrWhiteSpace(Model.Precautions))
+                    {
+                        <p class="mt-2 text-sm text-muted">@Model.Precautions</p>
+                    }
+                    @if (Model.NetWeightGrams is not null)
+                    {
+                        <p class="mt-2 text-sm text-muted">Peso líquido: @Model.NetWeightGrams g.</p>
+                    }
+                </div>
+            }
+        </section>
+    }
+</section>

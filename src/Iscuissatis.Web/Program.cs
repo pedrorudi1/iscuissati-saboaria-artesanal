@@ -1,10 +1,12 @@
 using Iscuissatis.Application.Identity;
 using Iscuissatis.Infrastructure.Identity;
 using Iscuissatis.Application.Catalog;
+using Iscuissatis.Application.Catalog.Public;
 using Iscuissatis.Application.Storage;
 using Iscuissatis.Infrastructure.Persistence;
 using Iscuissatis.Infrastructure.Persistence.Repositories;
 using Iscuissatis.Infrastructure.Storage;
+using System.Globalization;
 using Iscuissatis.Web.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -59,6 +61,7 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<ICatalogQueryService, CatalogQueryService>();
 builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection(StorageOptions.SectionName));
 builder.Services.AddSingleton<IFileStorage, LocalFileStorage>();
 builder.Services.AddSingleton<IImageProcessor, SkiaImageProcessor>();
@@ -85,6 +88,15 @@ if (app.Configuration.GetValue("Security:UseHttpsRedirection", true))
 }
 
 app.UseStatusCodePagesWithReExecute("/acesso-negado");
+
+// Loja brasileira: preços, datas e números em pt-BR, independentemente do host.
+var ptBr = new CultureInfo("pt-BR");
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(ptBr),
+    SupportedCultures = [ptBr],
+    SupportedUICultures = [ptBr],
+});
 
 app.UseRouting();
 app.UseAuthentication();

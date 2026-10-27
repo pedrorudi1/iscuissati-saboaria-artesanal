@@ -38,6 +38,12 @@ public sealed class Product
 
     public string? Precautions { get; private set; }
 
+    /// <summary>
+    /// Nome e descrição normalizados (sem acento, separados por hífen) para a busca
+    /// da vitrine funcionar com "calendula" encontrando "Calêndula".
+    /// </summary>
+    public string SearchTerms { get; private set; } = string.Empty;
+
     /// <summary>Peso líquido em gramas, exibido na página do produto.</summary>
     public int? NetWeightGrams { get; private set; }
 
@@ -93,6 +99,7 @@ public sealed class Product
             HowToUse = howToUse,
             Precautions = precautions,
             NetWeightGrams = netWeightGrams,
+            SearchTerms = BuildSearchTerms(trimmed, description),
         };
     }
 
@@ -126,6 +133,7 @@ public sealed class Product
         HowToUse = howToUse;
         Precautions = precautions;
         NetWeightGrams = netWeightGrams;
+        SearchTerms = BuildSearchTerms(trimmed, description);
         UpdatedAtUtc = now;
     }
 
@@ -235,6 +243,12 @@ public sealed class Product
         Status = ProductStatus.Draft;
         PublishedAtUtc = null;
         UpdatedAtUtc = now;
+    }
+
+    private static string BuildSearchTerms(string name, string? description)
+    {
+        var source = string.IsNullOrWhiteSpace(description) ? name : $"{name} {description}";
+        return Iscuissatis.Domain.Common.Slug.Create(source).Value;
     }
 
     private static string ValidateName(string name)
