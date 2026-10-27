@@ -17,8 +17,24 @@ public class SeoController(ICatalogQueryService catalog) : Controller
     [HttpGet("/sitemap.xml")]
     public async Task<IActionResult> Sitemap(CancellationToken cancellationToken)
     {
-        var products = await catalog.ListAsync(pageSize: 48, cancellationToken: cancellationToken);
         var categories = await catalog.ListCategoriesAsync(cancellationToken);
+
+        // Percorre todas as páginas: o sitemap não pode depender do tamanho da vitrine.
+        var productUrls = new List<string>();
+        var page = 1;
+
+        while (true)
+        {
+            var chunk = await catalog.ListAsync(page: page, pageSize: 48, cancellationToken: cancellationToken);
+            productUrls.AddRange(chunk.Items.Select(product => product.Slug));
+
+            if (page >= chunk.TotalPages || chunk.Items.Count == 0)
+            {
+                break;
+            }
+
+            page++;
+        }
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
         var settings = new XmlWriterSettings { Indent = true, Encoding = new UTF8Encoding(false) };
@@ -38,9 +54,9 @@ public class SeoController(ICatalogQueryService catalog) : Controller
                 await WriteUrlAsync(writer, $"{baseUrl}/sabonetes?categoria={category.Slug}");
             }
 
-            foreach (var product in products.Items)
+            foreach (var slug in productUrls)
             {
-                await WriteUrlAsync(writer, $"{baseUrl}/produto/{product.Slug}");
+                await WriteUrlAsync(writer, $"{baseUrl}/produto/{slug}");
             }
 
             await writer.WriteEndElementAsync();
