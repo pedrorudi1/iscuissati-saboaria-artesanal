@@ -6,6 +6,7 @@
     <title>@ViewData["Title"] · Iscuissati's Saboaria Artesanal</title>
     <meta name="description" content="@(ViewData["Description"] ?? "Sabonetes artesanais feitos à mão, com ingredientes naturais, em Tatuí, SP.")"/>
     <link rel="icon" href="~/favicon.ico"/>
+    <meta name="ga4-id" content="@(Context.RequestServices.GetService<IConfiguration>()?["Analytics:Ga4Id"])"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
     @await RenderSectionAsync("Head", required: false)
 </head>
@@ -64,7 +65,9 @@
             <ul class="mt-3 space-y-2 text-sm text-line">
                 <li><a class="hover:text-surface" href="/#categorias">Sabonetes em barra</a></li>
                 <li><a class="hover:text-surface" href="/#categorias">Kits e presentes</a></li>
-                <li><a class="hover:text-surface" href="/#sobre">Nossa história</a></li>
+                <li><a class="hover:text-surface" href="/sobre">Nossa história</a></li>
+                <li><a class="hover:text-surface" href="/faq">Perguntas frequentes</a></li>
+                <li><a class="hover:text-surface" href="/trocas-e-devolucoes">Trocas e devoluções</a></li>
             </ul>
         </div>
 
@@ -74,6 +77,7 @@
                 <li>WhatsApp: <span class="text-surface">a definir</span></li>
                 <li>Instagram: <span class="text-surface">@@iscuissatis</span></li>
                 <li>E-mail: <span class="text-surface">a definir</span></li>
+                <li><a class="hover:text-surface" href="/privacidade">Privacidade</a> · <a class="hover:text-surface" href="/termos">Termos</a></li>
             </ul>
         </div>
     </div>
@@ -85,6 +89,8 @@
         </div>
     </div>
 </footer>
+
+<partial name="_CookieBanner"/>
 
 @await RenderSectionAsync("Scripts", required: false)
 </body>
