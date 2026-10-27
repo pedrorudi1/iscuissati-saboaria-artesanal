@@ -1,4 +1,6 @@
+using Iscuissatis.Domain.Catalog;
 using Iscuissatis.Infrastructure.Identity;
+using Iscuissatis.Infrastructure.Persistence.Configurations;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +9,14 @@ namespace Iscuissatis.Infrastructure.Persistence;
 public class AppDbContext(DbContextOptions<AppDbContext> options)
     : IdentityDbContext<ApplicationUser>(options)
 {
+    public DbSet<Category> Categories => Set<Category>();
+
+    public DbSet<Product> Products => Set<Product>();
+
+    public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
+
+    public DbSet<ProductImage> ProductImages => Set<ProductImage>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -16,5 +26,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             user.Property(u => u.FullName).HasMaxLength(160);
             user.Property(u => u.CreatedAtUtc).IsRequired();
         });
+
+        builder.ApplyCatalog();
     }
 }
