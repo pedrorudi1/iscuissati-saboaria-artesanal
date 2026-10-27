@@ -15,11 +15,11 @@ public class SegurancaController(UserManager<ApplicationUser> userManager) : Con
     private const string RecoveryCodesKey = "RecoveryCodes";
 
     [HttpGet("/admin/seguranca/2fa")]
-    public async Task<IActionResult> Index(string? returnUrl = null)
+    public async Task<IActionResult> Index(string? returnUrl = null, string? erro = null)
     {
-        if (TempData["TwoFactorError"] is string error)
+        if (erro == "codigo")
         {
-            ModelState.AddModelError(string.Empty, error);
+            ModelState.AddModelError(string.Empty, "Código inválido. Confira o horário do celular e tente o código atual.");
         }
 
         var user = await userManager.GetUserAsync(User);
@@ -64,8 +64,7 @@ public class SegurancaController(UserManager<ApplicationUser> userManager) : Con
 
         if (!isValid)
         {
-            TempData["TwoFactorError"] = "Código inválido. Confira o horário do celular e tente o código atual.";
-            return RedirectToAction(nameof(Index), new { returnUrl });
+            return RedirectToAction(nameof(Index), new { returnUrl, erro = "codigo" });
         }
 
         await userManager.SetTwoFactorEnabledAsync(user, true);
