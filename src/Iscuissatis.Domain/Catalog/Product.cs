@@ -67,7 +67,8 @@ public sealed class Product
         string? ingredients = null,
         string? howToUse = null,
         string? precautions = null,
-        int? netWeightGrams = null)
+        int? netWeightGrams = null,
+        string? slug = null)
     {
         var trimmed = ValidateName(name);
 
@@ -81,7 +82,11 @@ public sealed class Product
             throw new DomainException("O peso líquido não pode ser negativo.");
         }
 
-        return new Product(trimmed, Iscuissatis.Domain.Common.Slug.Create(trimmed).Value, categoryId, now)
+        var finalSlug = string.IsNullOrWhiteSpace(slug)
+            ? Iscuissatis.Domain.Common.Slug.Create(trimmed).Value
+            : Iscuissatis.Domain.Common.Slug.Create(slug.Trim()).Value;
+
+        return new Product(trimmed, finalSlug, categoryId, now)
         {
             Description = description,
             Ingredients = ingredients,
@@ -99,7 +104,8 @@ public sealed class Product
         string? ingredients = null,
         string? howToUse = null,
         string? precautions = null,
-        int? netWeightGrams = null)
+        int? netWeightGrams = null,
+        string? slug = null)
     {
         var trimmed = ValidateName(name);
 

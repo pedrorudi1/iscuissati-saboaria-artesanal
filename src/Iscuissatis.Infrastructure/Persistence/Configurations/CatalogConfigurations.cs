@@ -12,6 +12,7 @@ public static class CatalogConfigurations
         {
             entity.ToTable("Categories");
             entity.HasKey(category => category.Id);
+            entity.Property(category => category.Id).ValueGeneratedNever();
             entity.Property(category => category.Name).HasMaxLength(120).IsRequired();
             entity.Property(category => category.Slug).HasMaxLength(140).IsRequired();
             entity.Property(category => category.Description).HasMaxLength(600);
@@ -23,6 +24,7 @@ public static class CatalogConfigurations
         {
             entity.ToTable("Products");
             entity.HasKey(product => product.Id);
+            entity.Property(product => product.Id).ValueGeneratedNever();
             entity.Property(product => product.Name).HasMaxLength(160).IsRequired();
             entity.Property(product => product.Slug).HasMaxLength(180).IsRequired();
             entity.Property(product => product.Description).HasMaxLength(4000);
@@ -57,6 +59,7 @@ public static class CatalogConfigurations
         {
             entity.ToTable("ProductVariants");
             entity.HasKey(variant => variant.Id);
+            entity.Property(variant => variant.Id).ValueGeneratedNever();
             entity.Property(variant => variant.Name).HasMaxLength(120).IsRequired();
             entity.Property(variant => variant.Sku).HasMaxLength(60).IsRequired();
             entity.Property(variant => variant.Price).HasPrecision(18, 2);
@@ -73,6 +76,7 @@ public static class CatalogConfigurations
         {
             entity.ToTable("ProductImages");
             entity.HasKey(image => image.Id);
+            entity.Property(image => image.Id).ValueGeneratedNever();
             entity.Property(image => image.Path).HasMaxLength(300).IsRequired();
             entity.Property(image => image.AltText).HasMaxLength(200).IsRequired();
             entity.HasIndex(image => new { image.ProductId, image.SortOrder });
