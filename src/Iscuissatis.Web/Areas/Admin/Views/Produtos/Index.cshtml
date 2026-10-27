@@ -1,0 +1,96 @@
+@using Iscuissatis.Domain.Catalog
+@model Iscuissatis.Web.Models.ProductListViewModel
+@{
+    ViewData["Title"] = "Produtos";
+}
+
+<div class="flex flex-wrap items-center justify-between gap-4">
+    <p class="text-sm text-muted">Rascunhos não aparecem na loja. Publicar exige variação ativa e imagem.</p>
+    <a class="btn btn-primary" asp-action="Create">Novo produto</a>
+</div>
+
+<form method="get" class="card mt-6 grid gap-4 sm:grid-cols-[1fr_200px_220px_auto] sm:items-end">
+    <div class="field !mb-0">
+        <label for="q">Buscar por nome ou SKU</label>
+        <input id="q" name="q" value="@Model.Search" placeholder="lavanda, LAV-100…"/>
+    </div>
+    <div class="field !mb-0">
+        <label for="status">Situação</label>
+        <select id="status" name="status">
+            <option value="">Todas</option>
+            <option value="0" selected="@(Model.Status == ProductStatus.Draft)">Rascunho</option>
+            <option value="1" selected="@(Model.Status == ProductStatus.Published)">Publicado</option>
+        </select>
+    </div>
+    <div class="field !mb-0">
+        <label for="categoria">Categoria</label>
+        <select id="categoria" name="categoria">
+            <option value="">Todas</option>
+            @foreach (var category in Model.Categories)
+            {
+                <option value="@category.Id" selected="@(Model.CategoryId == category.Id)">@category.Name</option>
+            }
+        </select>
+    </div>
+    <button type="submit" class="btn btn-outline">Filtrar</button>
+</form>
+
+@if (Model.Products.Count == 0)
+{
+    <div class="card mt-6 text-center">
+        <p class="font-display uppercase tracking-[0.08em] text-sm text-muted">Nenhum produto encontrado</p>
+        <p class="mt-2 text-sm text-muted">Ajuste os filtros ou cadastre o primeiro sabonete.</p>
+        <p class="mt-4"><a class="btn btn-outline" asp-action="Create">Novo produto</a></p>
+    </div>
+}
+else
+{
+    <div class="card mt-6 overflow-x-auto p-0">
+        <table class="w-full text-left text-sm">
+            <thead class="bg-bg">
+                <tr class="font-display uppercase tracking-[0.08em] text-[11px] text-muted">
+                    <th scope="col" class="px-5 py-3">Produto</th>
+                    <th scope="col" class="px-5 py-3">Categoria</th>
+                    <th scope="col" class="px-5 py-3">Variações</th>
+                    <th scope="col" class="px-5 py-3">Estoque</th>
+                    <th scope="col" class="px-5 py-3">Situação</th>
+                    <th scope="col" class="px-5 py-3 text-right">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var product in Model.Products)
+            {
+                var categoryName = Model.Categories.FirstOrDefault(item => item.Id == product.CategoryId)?.Name ?? "—";
+                <tr class="border-t border-line">
+                    <td class="px-5 py-3">
+                        <span class="font-display uppercase tracking-[0.04em]">@product.Name</span>
+                        <span class="block font-mono text-xs text-muted">/@product.Slug</span>
+                    </td>
+                    <td class="px-5 py-3 text-muted">@categoryName</td>
+                    <td class="px-5 py-3">@product.Variants.Count</td>
+                    <td class="px-5 py-3">
+                        @product.Variants.Sum(variant => variant.StockQuantity)
+                        @if (product.IsSoldOut)
+                        {
+                            <span class="ml-2 text-[10px] uppercase tracking-[0.1em] text-primary">esgotado</span>
+                        }
+                    </td>
+                    <td class="px-5 py-3">
+                        @if (product.IsPublished)
+                        {
+                            <span class="text-olive-dark font-bold text-xs uppercase tracking-[0.1em]">Publicado</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted font-bold text-xs uppercase tracking-[0.1em]">Rascunho</span>
+                        }
+                    </td>
+                    <td class="px-5 py-3 text-right">
+                        <a class="text-primary underline text-xs" asp-action="Edit" asp-route-id="@product.Id">Editar</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

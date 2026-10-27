@@ -1,0 +1,184 @@
+@model Iscuissatis.Web.Models.ProductFormViewModel
+@{
+    ViewData["Title"] = Model.IsEdit ? "Editar produto" : "Novo produto";
+    var postUrl = Model.IsEdit ? $"/admin/produtos/{Model.Form.Id}/editar" : "/admin/produtos/novo";
+}
+
+@if (!string.IsNullOrWhiteSpace(Context.Request.Query["ok"]))
+{
+    <p class="card mb-6 border-l-4 border-l-olive text-sm" role="status">@Context.Request.Query["ok"]</p>
+}
+@if (!string.IsNullOrWhiteSpace(Context.Request.Query["erro"]))
+{
+    <p class="card mb-6 border-l-4 border-l-primary text-sm" role="alert">@Context.Request.Query["erro"]</p>
+}
+
+<section class="max-w-3xl">
+    <p class="text-sm text-muted">
+        O endereço do produto é gerado do nome e não muda depois.
+        @if (Model.IsEdit)
+        {
+            <span>Para publicar, é preciso ao menos uma variação ativa e uma imagem.</span>
+        }
+    </p>
+
+    <form method="post" action="@postUrl" class="card mt-6">
+        <div asp-validation-summary="ModelOnly" class="form__error mb-4" role="alert"></div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+            <div class="field">
+                <label asp-for="Form.Name"></label>
+                <input asp-for="Form.Name" autofocus/>
+                <span asp-validation-for="Form.Name" class="form__error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="Form.CategoryId"></label>
+                <select asp-for="Form.CategoryId">
+                    <option value="">Escolha…</option>
+                    @foreach (var category in Model.Categories)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="Form.CategoryId" class="form__error"></span>
+            </div>
+        </div>
+
+        <div class="field">
+            <label asp-for="Form.Description"></label>
+            <textarea asp-for="Form.Description" rows="3"></textarea>
+        </div>
+
+        <div class="field">
+            <label asp-for="Form.Ingredients"></label>
+            <textarea asp-for="Form.Ingredients" rows="3" placeholder="Aqua, Sodium Cocoate, Parfum…"></textarea>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+            <div class="field">
+                <label asp-for="Form.HowToUse"></label>
+                <textarea asp-for="Form.HowToUse" rows="2"></textarea>
+            </div>
+            <div class="field">
+                <label asp-for="Form.Precautions"></label>
+                <textarea asp-for="Form.Precautions" rows="2"></textarea>
+            </div>
+        </div>
+
+        <div class="field max-w-48">
+            <label asp-for="Form.NetWeightGrams"></label>
+            <input asp-for="Form.NetWeightGrams" type="number" min="0"/>
+        </div>
+
+        <div class="mt-2 flex flex-wrap gap-3">
+            <button type="submit" class="btn btn-primary">@(Model.IsEdit ? "Salvar dados" : "Criar rascunho")</button>
+            <a class="btn btn-outline" asp-action="Index">Voltar para a lista</a>
+        </div>
+    </form>
+</section>
+
+@if (Model.IsEdit)
+{
+    <section class="mt-10 max-w-4xl">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="text-xl">Variações</h2>
+            <div class="flex items-center gap-3 text-xs text-muted">
+                <span>Imagens: @Model.ImageCount</span>
+                @if (Model.IsPublished)
+                {
+                    <form method="post" asp-action="Unpublish" asp-route-id="@Model.Form.Id">
+                        <button type="submit" class="btn btn-outline !min-h-11 !px-4 !text-xs">Despublicar</button>
+                    </form>
+                }
+                else
+                {
+                    <form method="post" asp-action="Publish" asp-route-id="@Model.Form.Id">
+                        <button type="submit" class="btn btn-primary !min-h-11 !px-4 !text-xs">Publicar</button>
+                    </form>
+                }
+            </div>
+        </div>
+
+        @if (Model.Variants.Count == 0)
+        {
+            <p class="card mt-4 text-sm text-muted">Nenhuma variação ainda. Cadastre a primeira abaixo.</p>
+        }
+        else
+        {
+            <div class="card mt-4 overflow-x-auto p-0">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-bg">
+                        <tr class="font-display uppercase tracking-[0.08em] text-[11px] text-muted">
+                            <th scope="col" class="px-5 py-3">Variação</th>
+                            <th scope="col" class="px-5 py-3">SKU</th>
+                            <th scope="col" class="px-5 py-3">Preço</th>
+                            <th scope="col" class="px-5 py-3">Estoque</th>
+                            <th scope="col" class="px-5 py-3 text-right">Ajuste</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var variant in Model.Variants)
+                    {
+                        <tr class="border-t border-line">
+                            <td class="px-5 py-3 font-display uppercase tracking-[0.04em]">@variant.Name</td>
+                            <td class="px-5 py-3 font-mono text-xs">@variant.Sku</td>
+                            <td class="px-5 py-3">
+                                R$ @variant.EffectivePrice.ToString("N2")
+                                @if (variant.PromotionalPrice is not null)
+                                {
+                                    <span class="block text-xs text-muted line-through">R$ @variant.Price.ToString("N2")</span>
+                                }
+                            </td>
+                            <td class="px-5 py-3">@variant.StockQuantity</td>
+                            <td class="px-5 py-3">
+                                <div class="flex items-center justify-end gap-2">
+                                    <form method="post" asp-action="AdjustStock" asp-route-id="@Model.Form.Id" asp-route-variantId="@variant.Id">
+                                        <input type="hidden" name="delta" value="1"/>
+                                        <button type="submit" class="btn btn-outline !min-h-9 !px-3 !text-xs" aria-label="Adicionar uma unidade de @variant.Name">+1</button>
+                                    </form>
+                                    <form method="post" asp-action="AdjustStock" asp-route-id="@Model.Form.Id" asp-route-variantId="@variant.Id">
+                                        <input type="hidden" name="delta" value="-1"/>
+                                        <button type="submit" class="btn btn-outline !min-h-9 !px-3 !text-xs" aria-label="Retirar uma unidade de @variant.Name">−1</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <form method="post" asp-action="AddVariant" asp-route-id="@Model.Form.Id" class="card mt-6">
+            <h3 class="text-lg">Adicionar variação</h3>
+            <div class="mt-4 grid gap-4 sm:grid-cols-3">
+                <div class="field">
+                    <label asp-for="NewVariant.Name">Nome</label>
+                    <input asp-for="NewVariant.Name" placeholder="Lavanda 100 g"/>
+                </div>
+                <div class="field">
+                    <label asp-for="NewVariant.Sku">SKU</label>
+                    <input asp-for="NewVariant.Sku" placeholder="LAV-100"/>
+                </div>
+                <div class="field">
+                    <label asp-for="NewVariant.Price">Preço (R$)</label>
+                    <input asp-for="NewVariant.Price" type="number" step="0.01" min="0"/>
+                </div>
+                <div class="field">
+                    <label asp-for="NewVariant.PromotionalPrice">Promocional (R$)</label>
+                    <input asp-for="NewVariant.PromotionalPrice" type="number" step="0.01" min="0"/>
+                </div>
+                <div class="field">
+                    <label asp-for="NewVariant.StockQuantity">Estoque</label>
+                    <input asp-for="NewVariant.StockQuantity" type="number" min="0"/>
+                </div>
+                <div class="field">
+                    <label asp-for="NewVariant.WeightGrams">Peso (g)</label>
+                    <input asp-for="NewVariant.WeightGrams" type="number" min="0"/>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">Adicionar variação</button>
+        </form>
+    </section>
+}
