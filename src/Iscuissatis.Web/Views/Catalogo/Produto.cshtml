@@ -124,7 +124,8 @@
                     }
                     @if (purchasable is not null)
                     {
-                        <form method="post" action="/sacola/adicionar" class="mt-4">
+                        <form method="post" asp-controller="Sacola" asp-action="Add" class="mt-4">
+                            @Html.AntiForgeryToken()
                             <input type="hidden" name="variantId" value="@purchasable.Id"/>
                             <input type="hidden" name="quantity" value="1"/>
                             <input type="hidden" name="returnUrl" value="/sacola"/>

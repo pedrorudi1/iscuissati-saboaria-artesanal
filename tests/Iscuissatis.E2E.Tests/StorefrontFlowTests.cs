@@ -28,9 +28,13 @@ public class StorefrontFlowTests(BrowserFixture fixture)
 
             // Adiciona a primeira variação disponível
             await page.GetByRole(AriaRole.Button, new() { Name = "Adicionar à sacola" }).ClickAsync();
-            await page.WaitForURLAsync("**/sacola**");
 
-            (await page.ContentAsync()).ShouldContain("Resumo");
+            // Espera o conteúdo da sacola carregar (o POST redireciona para /sacola).
+            await page.WaitForSelectorAsync("text=Resumo", new PageWaitForSelectorOptions { Timeout = 15000 });
+
+            var bagUrl = page.Url;
+            bagUrl.ShouldNotEndWith("/adicionar");
+            bagUrl.ShouldContain("/sacola");
 
             await page.GotoAsync("/checkout", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
