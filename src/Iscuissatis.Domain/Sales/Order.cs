@@ -217,7 +217,13 @@ public sealed class Order
             throw new DomainException("Não é possível criar pedido sem itens.");
         }
 
-        var order = new Order(number.Trim(), customerId, guestEmail?.Trim().ToLowerInvariant(), address, now);
+        // Clona o endereço: o EF mapeia como owned type e a mesma instância não pode
+        // pertencer a dois pedidos.
+        var addressCopy = ShippingAddress.Create(
+            address.Recipient, address.Street, address.Number, address.Complement,
+            address.District, address.City, address.State, address.ZipCode);
+
+        var order = new Order(number.Trim(), customerId, guestEmail?.Trim().ToLowerInvariant(), addressCopy, now);
 
         foreach (var item in items)
         {

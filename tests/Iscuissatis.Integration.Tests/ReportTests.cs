@@ -104,7 +104,8 @@ public class ReportTests(IntegrationTestFixture fixture)
         var address = ShippingAddress.Create("Cliente", "Rua A", "1", null, "Centro", "Tatuí", "SP", "18300000");
 
         var paidCart = await cartService.AddItemAsync($"anon-paid-{suffix}", variantId, 2);
-        var paid = await orderService.PlaceOrderAsync(paidCart, null, $"pago.{suffix}@teste.local", address);
+        var paid = await orderService.PlaceOrderAsync(paidCart, null, $"pago.{suffix}@teste.local",
+            ShippingAddress.Create("Cliente", "Rua A", "1", null, "Centro", "Tatuí", "SP", "18300000"));
         paid.MarkAsPaid(DateTimeOffset.UtcNow);
         await db2.SaveChangesAsync();
 
