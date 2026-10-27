@@ -28,6 +28,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<StockReservation> StockReservations => Set<StockReservation>();
 
+    public DbSet<Address> Addresses => Set<Address>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
