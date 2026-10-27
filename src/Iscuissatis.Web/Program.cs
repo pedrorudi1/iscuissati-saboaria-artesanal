@@ -65,6 +65,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddAuthorization();
 builder.Services.Configure<SeedOptions>(builder.Configuration.GetSection(SeedOptions.SectionName));
 builder.Services.AddScoped<IdentitySeeder>();
+builder.Services.AddScoped<DemoDataSeeder>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
@@ -156,6 +157,13 @@ if (app.Configuration.GetValue("Database:MigrateOnStartup", true))
 await using (var scope = app.Services.CreateAsyncScope())
 {
     await scope.ServiceProvider.GetRequiredService<IdentitySeeder>().SeedAsync();
+
+    // Homologação/E2E: cria um produto publicado se não houver nenhum.
+    // Nunca ligar em produção (Database__SeedDemo=false por padrão).
+    if (app.Configuration.GetValue("Database:SeedDemo", false))
+    {
+        await scope.ServiceProvider.GetRequiredService<DemoDataSeeder>().SeedAsync();
+    }
 }
 
 await app.RunAsync();

@@ -8,6 +8,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/Iscuissatis.Application.Tests/Iscuissatis.Application.Tests.csproj" />
     <Project Path="tests/Iscuissatis.Domain.Tests/Iscuissatis.Domain.Tests.csproj" />
+    <Project Path="tests/Iscuissatis.E2E.Tests/Iscuissatis.E2E.Tests.csproj" />
     <Project Path="tests/Iscuissatis.Integration.Tests/Iscuissatis.Integration.Tests.csproj" />
   </Folder>
 </Solution>
