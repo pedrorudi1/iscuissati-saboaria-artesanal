@@ -1,6 +1,7 @@
 @model Iscuissatis.Domain.Sales.Cart
 
 <section class="container-page py-10">
+    @Html.AntiForgeryToken()
     <h1 class="text-3xl md:text-[38px] text-primary">Sua sacola</h1>
 
     @if (ViewData["Error"] is string error && !string.IsNullOrWhiteSpace(error))
