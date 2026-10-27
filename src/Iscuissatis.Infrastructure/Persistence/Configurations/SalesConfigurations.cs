@@ -26,6 +26,61 @@ public static class SalesConfigurations
                 .SetPropertyAccessMode(PropertyAccessMode.Field);
         });
 
+        builder.Entity<Order>(entity =>
+        {
+            entity.ToTable("Orders");
+            entity.HasKey(order => order.Id);
+            entity.Property(order => order.Id).ValueGeneratedNever();
+            entity.Property(order => order.Number).HasMaxLength(32).IsRequired();
+            entity.HasIndex(order => order.Number).IsUnique();
+            entity.Property(order => order.GuestEmail).HasMaxLength(180);
+            entity.Property(order => order.Subtotal).HasPrecision(18, 2);
+            entity.Property(order => order.Shipping).HasPrecision(18, 2);
+            entity.Property(order => order.Discount).HasPrecision(18, 2);
+            entity.Ignore(order => order.Total);
+
+            entity.OwnsOne(order => order.ShippingAddress, address =>
+            {
+                address.Property(item => item.Recipient).HasColumnName("ShipRecipient").HasMaxLength(160);
+                address.Property(item => item.Street).HasColumnName("ShipStreet").HasMaxLength(200);
+                address.Property(item => item.Number).HasColumnName("ShipNumber").HasMaxLength(20);
+                address.Property(item => item.Complement).HasColumnName("ShipComplement").HasMaxLength(120);
+                address.Property(item => item.District).HasColumnName("ShipDistrict").HasMaxLength(120);
+                address.Property(item => item.City).HasColumnName("ShipCity").HasMaxLength(120);
+                address.Property(item => item.State).HasColumnName("ShipState").HasMaxLength(2);
+                address.Property(item => item.ZipCode).HasColumnName("ShipZipCode").HasMaxLength(8);
+            });
+
+            entity.HasMany(order => order.Items)
+                .WithOne()
+                .HasForeignKey(item => item.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Metadata.FindNavigation(nameof(Order.Items))!
+                .SetPropertyAccessMode(PropertyAccessMode.Field);
+        });
+
+        builder.Entity<OrderItem>(entity =>
+        {
+            entity.ToTable("OrderItems");
+            entity.HasKey(item => item.Id);
+            entity.Property(item => item.Id).ValueGeneratedNever();
+            entity.Property(item => item.ProductName).HasMaxLength(160).IsRequired();
+            entity.Property(item => item.VariantName).HasMaxLength(120).IsRequired();
+            entity.Property(item => item.UnitPrice).HasPrecision(18, 2);
+            entity.Ignore(item => item.LineTotal);
+        });
+
+        builder.Entity<StockReservation>(entity =>
+        {
+            entity.ToTable("StockReservations");
+            entity.HasKey(reservation => reservation.Id);
+            entity.Property(reservation => reservation.Id).ValueGeneratedNever();
+            entity.Ignore(reservation => reservation.IsReleased);
+            entity.HasIndex(reservation => reservation.OrderId);
+            entity.HasIndex(reservation => new { reservation.ProductVariantId, reservation.ReleasedAtUtc });
+        });
+
         builder.Entity<CartItem>(entity =>
         {
             entity.ToTable("CartItems");
