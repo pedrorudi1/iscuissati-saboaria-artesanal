@@ -11,8 +11,7 @@ namespace Iscuissatis.Integration.Tests;
 /// </summary>
 public sealed class IntegrationTestFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _database = new PostgreSqlBuilder()
-        .WithImage("postgres:17-alpine")
+    private readonly PostgreSqlContainer _database = new PostgreSqlBuilder("postgres:17-alpine")
         .WithDatabase("iscuissatis_tests")
         .WithUsername("iscuissatis")
         .WithPassword("tests-only")

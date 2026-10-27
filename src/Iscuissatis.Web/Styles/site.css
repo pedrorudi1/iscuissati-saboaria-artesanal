@@ -1,0 +1,293 @@
+@import "tailwindcss";
+@import "./_fonts.css";
+
+@source "../Views";
+@source "../Areas";
+@source "../Controllers";
+
+/* Tokens da marca — docs/design-tokens.md é a fonte de verdade.
+   Nunca use hex solto nas views: use estas variáveis (ou as classes geradas). */
+@theme {
+  --color-primary: #a9482b;
+  --color-primary-dark: #8d3a22;
+  --color-olive: #6b7a45;
+  --color-olive-dark: #4f5c30;
+  --color-bg: #f3ead8;
+  --color-surface: #fbf7ef;
+  --color-ink: #3a2a20;
+  --color-muted: #5e4a2e;
+  --color-line: #d9c9aa;
+  --color-field: #7a6544;
+
+  --font-display: "Oswald", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Lato", system-ui, -apple-system, sans-serif;
+  --font-script: "Yellowtail", "Segoe Script", cursive;
+
+  --radius-btn: 4px;
+  --radius-card: 8px;
+
+  --shadow-card: 0 1px 0 0 #d9c9aa, 0 8px 24px -18px rgb(58 42 32 / 45%);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.55;
+    /* Textura sutil de papel kraft, feita só com gradientes (sem imagem). */
+    background-image:
+      radial-gradient(circle at 15% 10%, rgb(255 255 255 / 35%) 0, transparent 45%),
+      radial-gradient(circle at 85% 60%, rgb(169 72 43 / 4%) 0, transparent 40%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--color-ink);
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--color-primary);
+    color: #fff;
+  }
+}
+
+@layer components {
+  .container-page {
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: 20px;
+  }
+
+  @media (min-width: 768px) {
+    .container-page {
+      padding-inline: 24px;
+    }
+  }
+
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 8px;
+    z-index: 100;
+    background: var(--color-primary);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: var(--radius-btn);
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .skip-link:focus {
+    left: 16px;
+  }
+
+  .eyebrow {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 12px;
+    color: var(--color-primary);
+  }
+
+  .script {
+    font-family: var(--font-script);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: clamp(24px, 3vw, 34px);
+    color: var(--color-primary);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 12px 26px;
+    border-radius: var(--radius-btn);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+    cursor: pointer;
+  }
+
+  .btn-primary {
+    background-color: var(--color-primary);
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-primary-dark);
+  }
+
+  .btn-outline {
+    border: 2px solid var(--color-primary);
+    color: var(--color-primary);
+    background-color: transparent;
+  }
+
+  .btn-outline:hover {
+    background-color: var(--color-primary);
+    color: #fff;
+  }
+
+  .btn:disabled,
+  .btn[aria-disabled="true"] {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .field > label {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 13px;
+    color: var(--color-ink);
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    min-height: 48px;
+    padding: 10px 14px;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-field);
+    border-radius: var(--radius-btn);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+  }
+
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 1px;
+  }
+
+  .form__error {
+    color: var(--color-primary);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .seal {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    width: 100%;
+    max-width: 260px;
+    border-radius: 9999px;
+    border: 2px solid var(--color-ink);
+    box-shadow: inset 0 0 0 6px var(--color-bg), inset 0 0 0 7px var(--color-ink);
+    background:
+      radial-gradient(circle at 30% 25%, #fdf8ee 0, var(--color-bg) 65%, #eadfc6 100%);
+    text-align: center;
+    padding: 28px;
+  }
+
+  .seal__kicker {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.28em;
+    font-size: 10px;
+    color: var(--color-muted);
+  }
+
+  .seal__name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: clamp(20px, 2.4vw, 26px);
+    line-height: 1.05;
+    color: var(--color-primary);
+    margin: 6px 0 4px;
+  }
+
+  .seal__motto {
+    font-family: var(--font-script);
+    font-size: 18px;
+    color: var(--color-olive-dark);
+  }
+
+  .nav-link {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 14px;
+    color: var(--color-ink);
+    padding: 12px 10px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .nav-link:hover {
+    color: var(--color-primary);
+  }
+
+  .divider-leaf {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--color-olive);
+  }
+
+  .divider-leaf::before,
+  .divider-leaf::after {
+    content: "";
+    height: 1px;
+    flex: 1;
+    background-color: var(--color-line);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

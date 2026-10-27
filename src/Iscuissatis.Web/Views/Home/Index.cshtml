@@ -1,6 +1,112 @@
 @{
-    ViewData["Title"] = "Início";
+    ViewData["Title"] = "Sabonetes artesanais";
 }
 
-<h1>Iscuissati's Saboaria Artesanal</h1>
-<p>Fundação em construção.</p>
+<section class="container-page grid items-center gap-12 py-12 md:grid-cols-2 md:py-16">
+    <div>
+        <p class="eyebrow">Saboaria artesanal · Tatuí, SP</p>
+        <h1 class="mt-3 text-4xl md:text-[clamp(38px,6vw,60px)] leading-[1.05] text-primary">
+            Sabonetes artesanais para o seu dia a dia
+        </h1>
+        <p class="mt-5 max-w-prose text-muted">
+            Barras feitas à mão, em pequenos lotes, com ingredientes naturais e fragrâncias
+            escolhidas com cuidado. Do banho rápido ao presente.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+            <a class="btn btn-primary" href="#categorias">Ver sabonetes</a>
+            <a class="btn btn-outline" href="#sobre">Nossa história</a>
+        </div>
+    </div>
+
+    <div class="flex justify-center md:justify-end">
+        <div class="seal" role="img" aria-label="Selo da Iscuissati's Saboaria Artesanal">
+            <div>
+                <p class="seal__kicker">Feito à mão</p>
+                <p class="seal__name">Iscuissati's<br/>Saboaria</p>
+                <p class="seal__motto">natural &amp; artesanal</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section aria-label="Por que comprar aqui" class="bg-surface border-y border-line">
+    <ul class="container-page grid gap-6 py-8 sm:grid-cols-3">
+        <li class="text-center">
+            <p class="font-display uppercase tracking-[0.1em] text-sm text-primary">Feito à mão</p>
+            <p class="mt-1 text-sm text-muted">Cada barra é produzida em pequenos lotes.</p>
+        </li>
+        <li class="text-center">
+            <p class="font-display uppercase tracking-[0.1em] text-sm text-primary">Ingredientes naturais</p>
+            <p class="mt-1 text-sm text-muted">Fórmulas simples, com ingredientes selecionados.</p>
+        </li>
+        <li class="text-center">
+            <p class="font-display uppercase tracking-[0.1em] text-sm text-primary">Envio para todo o Brasil</p>
+            <p class="mt-1 text-sm text-muted">Embalagem pensada para chegar inteiro.</p>
+        </li>
+    </ul>
+</section>
+
+<section id="categorias" class="container-page py-14">
+    <div class="divider-leaf" aria-hidden="true">
+        <span class="eyebrow">Categorias</span>
+    </div>
+    <h2 class="mt-4 text-center text-3xl md:text-[34px]">Escolha por categoria</h2>
+
+    <ul class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <li class="card">
+            <h3 class="text-xl">Sabonetes em barra</h3>
+            <p class="mt-2 text-sm text-muted">Lavanda, alecrim, calêndula, aveia e mel.</p>
+            <p class="mt-4 text-xs font-bold uppercase tracking-[0.1em] text-olive-dark">Catálogo em preparação</p>
+        </li>
+        <li class="card">
+            <h3 class="text-xl">Kits e presentes</h3>
+            <p class="mt-2 text-sm text-muted">Combinações para presentear com embalagem especial.</p>
+            <p class="mt-4 text-xs font-bold uppercase tracking-[0.1em] text-olive-dark">Em breve</p>
+        </li>
+        <li class="card">
+            <h3 class="text-xl">Novidades</h3>
+            <p class="mt-2 text-sm text-muted">Novas fragrâncias e linhas, sempre em pequenos lotes.</p>
+            <p class="mt-4 text-xs font-bold uppercase tracking-[0.1em] text-olive-dark">Em breve</p>
+        </li>
+    </ul>
+
+    <p class="mt-8 text-center text-sm text-muted">
+        O catálogo com preços e disponibilidade entra na próxima fase do projeto.
+    </p>
+</section>
+
+<section id="sobre" class="bg-olive-dark text-surface">
+    <div class="container-page grid gap-8 py-16 md:grid-cols-[1.1fr_0.9fr] md:items-center">
+        <div>
+            <p class="eyebrow text-surface/80">Uma saboaria artesanal</p>
+            <h2 class="mt-3 text-3xl text-surface">Uma saboaria artesanal</h2>
+            <p class="mt-5 max-w-prose text-surface/90">
+                A Iscuissati's nasceu do cuidado com o simples: um banho bom, um cheiro que lembra casa,
+                um presente que não precisa ser caro para ser especial. Tudo é feito à mão, em lotes
+                pequenos, acompanhando o tempo dos ingredientes.
+            </p>
+            <p class="mt-4 max-w-prose text-surface/90">
+                Texto institucional definitivo será publicado na fase de conteúdo.
+            </p>
+        </div>
+        <div class="flex justify-center md:justify-end">
+            <div class="seal">
+                <div>
+                    <p class="seal__kicker">Desde sempre</p>
+                    <p class="seal__name">Natural<br/>&amp; artesanal</p>
+                    <p class="seal__motto">feito com calma</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container-page py-16 text-center">
+    <h2 class="text-2xl md:text-[30px]">Fale com a saboaria</h2>
+    <p class="mx-auto mt-3 max-w-prose text-muted">
+        Dúvidas sobre ingredientes, prazos ou presentes? O atendimento é direto, por WhatsApp.
+    </p>
+    <p class="mt-6">
+        <a class="btn btn-primary" href="#contato">Ver canais de atendimento</a>
+    </p>
+</section>

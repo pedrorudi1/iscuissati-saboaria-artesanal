@@ -33,6 +33,17 @@ export ConnectionStrings__DefaultConnection="Host=localhost;Port=5432;Database=i
 dotnet run --project src/Iscuissatis.Web
 ```
 
+Estilos (Tailwind standalone, sem Node):
+
+```bash
+./scripts/build-css.sh          # gera wwwroot/css/site.css
+./scripts/build-css.sh --watch  # durante o desenvolvimento
+```
+
+O CSS compilado é versionado, então o deploy não precisa do binário do Tailwind.
+Cores, fontes e espaçamentos vivem em `src/Iscuissatis.Web/Styles/site.css` (`@theme`)
+e espelham `docs/design-tokens.md`: nada de valor solto nas views.
+
 Testes:
 
 ```bash
