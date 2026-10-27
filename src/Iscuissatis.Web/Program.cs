@@ -3,10 +3,12 @@ using Iscuissatis.Infrastructure.Identity;
 using Iscuissatis.Application.Catalog;
 using Iscuissatis.Application.Catalog.Public;
 using Iscuissatis.Application.Sales;
+using Iscuissatis.Application.Shipping;
 using Iscuissatis.Application.Storage;
 using Iscuissatis.Infrastructure.Persistence;
 using Iscuissatis.Infrastructure.Persistence.Repositories;
 using Iscuissatis.Infrastructure.Integrations;
+using Iscuissatis.Infrastructure.Shipping;
 using Iscuissatis.Infrastructure.Storage;
 using System.Globalization;
 using Iscuissatis.Web.Infrastructure;
@@ -70,6 +72,8 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 builder.Services.AddScoped<AddressService>();
+builder.Services.Configure<ShippingOptions>(builder.Configuration.GetSection(ShippingOptions.SectionName));
+builder.Services.AddSingleton<IShippingProvider, TableShippingProvider>();
 builder.Services.AddHttpClient<IZipCodeLookup, ViaCepLookup>(client =>
 {
     client.BaseAddress = new Uri("https://viacep.com.br/");

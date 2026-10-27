@@ -10,5 +10,6 @@ public sealed record VariantSnapshot(
     string VariantName,
     decimal Price,
     int StockQuantity,
+    int WeightGrams,
     bool IsActive,
     bool IsPublished);

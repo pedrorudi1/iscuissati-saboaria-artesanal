@@ -1,3 +1,4 @@
+using Iscuissatis.Application.Shipping;
 using Iscuissatis.Domain.Common;
 using Iscuissatis.Domain.Sales;
 
@@ -13,6 +14,7 @@ public sealed class OrderService(IOrderRepository orders, TimeProvider clock)
         Guid? customerId,
         string? guestEmail,
         ShippingAddress address,
+        ShippingOption? shipping = null,
         CancellationToken cancellationToken = default)
     {
         if (cart.Items.Count == 0)
@@ -28,6 +30,11 @@ public sealed class OrderService(IOrderRepository orders, TimeProvider clock)
             .ToList();
 
         var order = Order.Create(number, customerId, guestEmail, address, items, now);
+
+        if (shipping is not null)
+        {
+            order.SetShipping(shipping.Price, now);
+        }
 
         var requests = cart.Items
             .Select(item => new StockRequest(item.ProductVariantId, item.ProductName, item.Quantity))

@@ -1,4 +1,6 @@
 using Iscuissatis.Application.Sales;
+using Iscuissatis.Application.Shipping;
+using Iscuissatis.Application.Catalog;
 using Iscuissatis.Domain.Common;
 using Iscuissatis.Domain.Sales;
 using Iscuissatis.Infrastructure.Identity;
@@ -15,7 +17,9 @@ public class CheckoutController(
     OrderService orderService,
     IZipCodeLookup zipCodeLookup,
     UserManager<ApplicationUser> userManager,
-    AddressService addressService) : Controller
+    AddressService addressService,
+    IShippingProvider shippingProvider,
+    IProductRepository products) : Controller
 {
     [HttpGet("/checkout")]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -59,6 +63,8 @@ public class CheckoutController(
             }
         }
 
+        ViewData["ShippingOptions"] = await QuoteAsync(cart, form.ZipCode, cancellationToken);
+
         return View(form);
     }
 
@@ -86,6 +92,28 @@ public class CheckoutController(
             return View(form);
         }
 
+        IReadOnlyList<ShippingOption> shippingOptions;
+
+        try
+        {
+            shippingOptions = await QuoteAsync(cart, form.ZipCode, cancellationToken);
+        }
+        catch (DomainException exception)
+        {
+            ModelState.AddModelError(string.Empty, exception.Message);
+            return View(form);
+        }
+
+        ViewData["ShippingOptions"] = shippingOptions;
+
+        var shipping = shippingOptions.FirstOrDefault(option => option.Code == form.ShippingCode);
+
+        if (shipping is null)
+        {
+            ModelState.AddModelError(string.Empty, "Escolha uma opção de entrega válida.");
+            return View(form);
+        }
+
         try
         {
             var address = ShippingAddress.Create(
@@ -109,6 +137,7 @@ public class CheckoutController(
                 customerId,
                 customerId is null ? form.GuestEmail : null,
                 address,
+                shipping,
                 cancellationToken);
 
             await cartService.ClearCartAsync(cart, cancellationToken);
@@ -147,6 +176,24 @@ public class CheckoutController(
 
         ViewData["Title"] = $"Pedido {order.Number}";
         return View("Confirmacao", order);
+    }
+
+    private async Task<IReadOnlyList<ShippingOption>> QuoteAsync(
+        Cart cart,
+        string? zipCode,
+        CancellationToken cancellationToken)
+    {
+        var weight = 0;
+
+        foreach (var item in cart.Items)
+        {
+            var variant = await products.GetVariantSnapshotAsync(item.ProductVariantId, cancellationToken);
+            weight += (variant?.WeightGrams ?? 0) * item.Quantity;
+        }
+
+        return await shippingProvider.QuoteAsync(
+            new ShippingQuoteRequest(zipCode ?? string.Empty, weight, cart.Subtotal),
+            cancellationToken);
     }
 
     private Task<Cart?> LoadCartAsync(CancellationToken cancellationToken)
