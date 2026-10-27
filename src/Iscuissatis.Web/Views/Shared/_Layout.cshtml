@@ -2,13 +2,81 @@
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>@ViewData["Title"] · Iscuissati's Saboaria Artesanal</title>
+    <meta name="description" content="@(ViewData["Description"] ?? "Sabonetes artesanais feitos à mão, com ingredientes naturais, em Tatuí, SP.")"/>
+    <link rel="icon" href="~/favicon.ico"/>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+    @await RenderSectionAsync("Head", required: false)
 </head>
-<body>
-<main role="main">
+<body class="min-h-screen flex flex-col">
+<a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+<div class="bg-primary text-surface">
+    <p class="container-page py-2 text-center font-display uppercase tracking-[0.14em] text-[11px]">
+        Produtos naturais &amp; feitos à mão · Tatuí, SP
+    </p>
+</div>
+
+<header class="bg-surface border-b border-line">
+    <div class="container-page flex flex-wrap items-center justify-between gap-4 py-4">
+        <a href="/" class="flex items-baseline gap-2 no-underline">
+            <span class="font-display font-bold uppercase tracking-[0.08em] text-xl text-primary">Iscuissati's</span>
+            <span class="script text-xl">Saboaria Artesanal</span>
+        </a>
+
+        <nav aria-label="Principal" class="flex flex-wrap items-center gap-1">
+            <a class="nav-link" href="/">Início</a>
+            <a class="nav-link" href="/#categorias">Sabonetes</a>
+            <a class="nav-link" href="/#sobre">Sobre</a>
+            <a class="nav-link" href="/#contato">Contato</a>
+        </nav>
+
+        <a class="btn btn-outline" href="/#contato">Falar com a saboaria</a>
+    </div>
+</header>
+
+<main id="conteudo" class="flex-1">
     @RenderBody()
 </main>
+
+<footer id="contato" class="bg-ink text-surface mt-16">
+    <div class="container-page grid gap-10 py-12 md:grid-cols-3">
+        <div>
+            <p class="font-display font-bold uppercase tracking-[0.08em] text-lg">Iscuissati's</p>
+            <p class="script text-2xl text-surface">Saboaria Artesanal</p>
+            <p class="mt-3 text-sm text-line">
+                Sabonetes artesanais feitos à mão, em pequenos lotes.
+            </p>
+        </div>
+
+        <div>
+            <h2 class="font-display uppercase tracking-[0.1em] text-sm text-surface">Loja</h2>
+            <ul class="mt-3 space-y-2 text-sm text-line">
+                <li><a class="hover:text-surface" href="/#categorias">Sabonetes em barra</a></li>
+                <li><a class="hover:text-surface" href="/#categorias">Kits e presentes</a></li>
+                <li><a class="hover:text-surface" href="/#sobre">Nossa história</a></li>
+            </ul>
+        </div>
+
+        <div>
+            <h2 class="font-display uppercase tracking-[0.1em] text-sm text-surface">Atendimento</h2>
+            <ul class="mt-3 space-y-2 text-sm text-line">
+                <li>WhatsApp: <span class="text-surface">a definir</span></li>
+                <li>Instagram: <span class="text-surface">@@iscuissatis</span></li>
+                <li>E-mail: <span class="text-surface">a definir</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="border-t border-muted">
+        <div class="container-page flex flex-col gap-2 py-6 text-xs text-line md:flex-row md:items-center md:justify-between">
+            <p>© @DateTime.UtcNow.Year Iscuissati's Saboaria Artesanal. Todos os direitos reservados.</p>
+            <p>Razão social, CNPJ e endereço a preencher antes da publicação.</p>
+        </div>
+    </div>
+</footer>
+
 @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

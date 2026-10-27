@@ -1,9 +1,12 @@
 @{
     ViewData["Title"] = "Acesso negado";
+    Layout = "_AuthLayout";
 }
 
-<section class="auth">
-    <h1>Acesso negado</h1>
-    <p>Sua conta não tem permissão para abrir esta página.</p>
-    <p><a asp-controller="Home" asp-action="Index">Voltar para a loja</a></p>
+<section class="card text-center">
+    <h1 class="text-2xl text-primary">Acesso negado</h1>
+    <p class="mt-2 text-sm text-muted">Sua conta não tem permissão para abrir esta página.</p>
+    <p class="mt-6">
+        <a class="btn btn-outline" href="/">Voltar para a loja</a>
+    </p>
 </section>

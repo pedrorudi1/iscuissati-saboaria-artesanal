@@ -51,7 +51,7 @@ public class AccountController(SignInManager<ApplicationUser> signInManager) : C
     [HttpPost("/sair")]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> SignOut()
+    public async Task<IActionResult> Logout()
     {
         await signInManager.SignOutAsync();
         return RedirectToAction("Index", "Home");

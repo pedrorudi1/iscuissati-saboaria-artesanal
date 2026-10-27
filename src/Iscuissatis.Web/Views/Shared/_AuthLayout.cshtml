@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="robots" content="noindex"/>
+    <title>@ViewData["Title"] · Iscuissati's Saboaria Artesanal</title>
+    <link rel="icon" href="~/favicon.ico"/>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+</head>
+<body class="min-h-screen flex flex-col">
+<main id="conteudo" class="flex-1 grid place-items-center px-5 py-12">
+    <div class="w-full max-w-md">
+        <div class="mb-8 text-center">
+            <p class="font-display font-bold uppercase tracking-[0.08em] text-xl text-primary">Iscuissati's</p>
+            <p class="script text-2xl">Saboaria Artesanal</p>
+        </div>
+        @RenderBody()
+    </div>
+</main>
+</body>
+</html>

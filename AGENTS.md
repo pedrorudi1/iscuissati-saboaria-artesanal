@@ -35,6 +35,8 @@ EF Core + PostgreSQL, Tailwind, HTMX. Documentação em docs/.
 - Nunca editar migration já aplicada; criar uma nova.
 - Sem segredos no código. Todo PR com testes e build verde.
 - Dúvida de negócio: perguntar, não presumir.
+- O agente abre o PR e para: o merge na `main` é sempre manual do responsável.
+  Nunca faça merge, squash ou push direto na `main`.
 
 ## Referências
 - Plano completo: docs/plano-de-desenvolvimento.md

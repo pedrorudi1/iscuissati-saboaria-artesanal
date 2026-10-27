@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="robots" content="noindex"/>
+    <title>@ViewData["Title"] · Painel Iscuissati's</title>
+    <link rel="icon" href="~/favicon.ico"/>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+</head>
+<body class="min-h-screen bg-bg">
+<a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+<div class="grid min-h-screen md:grid-cols-[260px_1fr]">
+    <aside class="bg-olive-dark text-surface flex flex-col">
+        <div class="px-6 py-6 border-b border-surface/20">
+            <p class="font-display font-bold uppercase tracking-[0.08em] text-lg">Iscuissati's</p>
+            <p class="script text-xl text-surface">Saboaria Artesanal</p>
+            <p class="mt-2 text-[11px] uppercase tracking-[0.18em] text-surface/70">Painel</p>
+        </div>
+
+        <nav aria-label="Painel" class="flex-1 px-3 py-4">
+            <ul class="space-y-1">
+                <li>
+                    <a class="flex min-h-11 items-center rounded px-3 font-display uppercase tracking-[0.08em] text-sm bg-surface/15 text-surface"
+                       asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+                </li>
+                <li><span class="flex min-h-11 items-center justify-between rounded px-3 font-display uppercase tracking-[0.08em] text-sm text-surface/55" aria-disabled="true">Produtos <span class="text-[10px] normal-case tracking-normal">em breve</span></span></li>
+                <li><span class="flex min-h-11 items-center justify-between rounded px-3 font-display uppercase tracking-[0.08em] text-sm text-surface/55" aria-disabled="true">Estoque <span class="text-[10px] normal-case tracking-normal">em breve</span></span></li>
+                <li><span class="flex min-h-11 items-center justify-between rounded px-3 font-display uppercase tracking-[0.08em] text-sm text-surface/55" aria-disabled="true">Pedidos <span class="text-[10px] normal-case tracking-normal">em breve</span></span></li>
+                <li><span class="flex min-h-11 items-center justify-between rounded px-3 font-display uppercase tracking-[0.08em] text-sm text-surface/55" aria-disabled="true">Clientes <span class="text-[10px] normal-case tracking-normal">em breve</span></span></li>
+                <li><span class="flex min-h-11 items-center justify-between rounded px-3 font-display uppercase tracking-[0.08em] text-sm text-surface/55" aria-disabled="true">Conteúdo <span class="text-[10px] normal-case tracking-normal">em breve</span></span></li>
+            </ul>
+        </nav>
+
+        <div class="px-6 py-4 border-t border-surface/20">
+            <a class="text-xs text-surface/80 underline hover:text-surface" href="/">Ver a loja</a>
+        </div>
+    </aside>
+
+    <div class="flex min-w-0 flex-col">
+        <header class="bg-surface border-b border-line">
+            <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-4 md:px-8">
+                <div>
+                    <p class="text-[11px] uppercase tracking-[0.18em] text-muted">Área administrativa</p>
+                    <h1 class="font-display uppercase tracking-[0.04em] text-lg">@ViewData["Title"]</h1>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-muted">@User.Identity?.Name</span>
+                    <form method="post" asp-area="" asp-controller="Account" asp-action="Logout">
+                        <button type="submit" class="btn btn-outline !min-h-11 !px-4 !text-xs">Sair</button>
+                    </form>
+                </div>
+            </div>
+        </header>
+
+        <main id="conteudo" class="flex-1 px-5 py-8 md:px-8">
+            @RenderBody()
+        </main>
+    </div>
+</div>
+
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
