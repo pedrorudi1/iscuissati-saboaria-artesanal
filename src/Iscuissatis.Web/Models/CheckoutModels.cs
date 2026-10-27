@@ -46,4 +46,7 @@ public class CheckoutFormModel
     [StringLength(180)]
     [Display(Name = "E-mail para contato")]
     public string? GuestEmail { get; set; }
+
+    [Required(ErrorMessage = "Escolha uma opção de entrega.")]
+    public string ShippingCode { get; set; } = string.Empty;
 }

@@ -77,6 +77,7 @@ public sealed class ProductRepository(AppDbContext dbContext) : IProductReposito
                 variant.Name,
                 variant.PromotionalPrice ?? variant.Price,
                 variant.StockQuantity,
+                variant.WeightGrams,
                 variant.IsActive,
                 product.Status == ProductStatus.Published))
             .FirstOrDefaultAsync(cancellationToken);
