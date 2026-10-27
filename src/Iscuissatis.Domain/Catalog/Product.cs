@@ -158,15 +158,55 @@ public sealed class Product
         return variant;
     }
 
-    public ProductImage AddImage(string path, string altText, DateTimeOffset now)
+    public ProductImage AddImage(
+        string path,
+        string altText,
+        DateTimeOffset now,
+        int width = 0,
+        int height = 0)
     {
         var image = ProductImage.Create(
-            Id, path, altText, _images.Count, isPrimary: _images.Count == 0, now);
+            Id, path, altText, _images.Count, isPrimary: _images.Count == 0, now, width, height);
 
         _images.Add(image);
         UpdatedAtUtc = now;
 
         return image;
+    }
+
+    public ProductImage RemoveImage(Guid imageId, DateTimeOffset now)
+    {
+        var image = _images.FirstOrDefault(item => item.Id == imageId)
+            ?? throw new DomainException("Imagem não encontrada.");
+
+        var wasPrimary = image.IsPrimary;
+        _images.Remove(image);
+
+        if (wasPrimary && _images.Count > 0)
+        {
+            _images[0].SetAsPrimary();
+        }
+
+        UpdatedAtUtc = now;
+
+        return image;
+    }
+
+    public void SetPrimaryImage(Guid imageId, DateTimeOffset now)
+    {
+        var image = _images.FirstOrDefault(item => item.Id == imageId)
+            ?? throw new DomainException("Imagem não encontrada.");
+
+        foreach (var item in _images)
+        {
+            if (item.IsPrimary)
+            {
+                item.UnsetPrimary();
+            }
+        }
+
+        image.SetAsPrimary();
+        UpdatedAtUtc = now;
     }
 
     /// <summary>

@@ -25,6 +25,8 @@ public class ProductFormViewModel
 
     public IReadOnlyList<ProductVariant> Variants { get; set; } = [];
 
+    public IReadOnlyList<ProductImage> Images { get; set; } = [];
+
     public int ImageCount { get; set; }
 
     public bool IsPublished { get; set; }

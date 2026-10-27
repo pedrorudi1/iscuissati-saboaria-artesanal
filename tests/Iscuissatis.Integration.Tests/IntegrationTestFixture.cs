@@ -18,6 +18,10 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
         .Build();
 
     public const string AdminEmail = "admin@teste.local";
+
+    /// <summary>Pasta de uploads isolada por execução do conjunto de testes.</summary>
+    public static string StorageRoot { get; } =
+        Path.Combine(Path.GetTempPath(), "iscuissatis-tests", Guid.NewGuid().ToString("N"));
     public const string AdminPassword = "SenhaDeTeste123";
 
     public WebApplicationFactory<Program> Factory { get; private set; } = null!;
@@ -34,6 +38,8 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
             builder.UseSetting("ConnectionStrings:DefaultConnection", ConnectionString);
             builder.UseSetting("Database:MigrateOnStartup", "true");
             builder.UseSetting("Security:UseHttpsRedirection", "false");
+            builder.UseSetting("Storage:RootPath", StorageRoot);
+            builder.UseSetting("Storage:PublicPrefix", "/media");
             builder.UseSetting("Seed:AdminEmail", AdminEmail);
             builder.UseSetting("Seed:AdminPassword", AdminPassword);
             builder.UseSetting("Seed:AdminFullName", "Administrador de Teste");

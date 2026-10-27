@@ -1,4 +1,5 @@
 using Iscuissatis.Application.Catalog;
+using Iscuissatis.Application.Storage;
 using Iscuissatis.Domain.Catalog;
 using Iscuissatis.Domain.Common;
 using Microsoft.Extensions.Time.Testing;
@@ -14,6 +15,8 @@ public class ProductServiceTests
 
     private readonly IProductRepository _products = Substitute.For<IProductRepository>();
     private readonly ICategoryRepository _categories = Substitute.For<ICategoryRepository>();
+    private readonly IFileStorage _storage = Substitute.For<IFileStorage>();
+    private readonly IImageProcessor _images = Substitute.For<IImageProcessor>();
     private readonly FakeTimeProvider _clock = new(Now);
     private readonly ProductService _service;
 
@@ -26,7 +29,7 @@ public class ProductServiceTests
         _categories.FindAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(Category.Create("Sabonetes", Now));
 
-        _service = new ProductService(_products, _categories, _clock);
+        _service = new ProductService(_products, _categories, _clock, _storage, _images);
     }
 
     [Fact]
@@ -135,6 +138,72 @@ public class ProductServiceTests
 
         product.Name.ShouldBe("Sabonete de Lavanda Premium");
         product.Slug.ShouldBe("sabonete");
+    }
+
+    [Fact]
+    public async Task AddImage_stores_the_processed_file_and_registers_it()
+    {
+        var product = Product.Create("Sabonete", CategoryId, Now);
+        _products.FindAsync(product.Id, Arg.Any<CancellationToken>()).Returns(product);
+        _images.ProcessAsync(Arg.Any<Stream>(), Arg.Any<CancellationToken>())
+            .Returns(new ProcessedImage([1, 2, 3], "image/webp", 800, 600));
+        _storage.SaveAsync(Arg.Any<ReadOnlyMemory<byte>>(), Arg.Any<string>(), "image/webp", Arg.Any<CancellationToken>())
+            .Returns("/media/produtos/2026/10/abc.webp");
+
+        using var stream = new MemoryStream([1, 2, 3]);
+        var image = await _service.AddImageAsync(product.Id, stream, "foto.jpeg", "Sabonete de lavanda");
+
+        image.Path.ShouldBe("/media/produtos/2026/10/abc.webp");
+        image.Width.ShouldBe(800);
+        image.Height.ShouldBe(600);
+        image.IsPrimary.ShouldBeTrue();
+        await _storage.Received(1).SaveAsync(
+            Arg.Any<ReadOnlyMemory<byte>>(), Arg.Is<string>(name => name.EndsWith(".webp")),
+            "image/webp", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AddImage_rejects_content_that_is_not_an_image()
+    {
+        var product = Product.Create("Sabonete", CategoryId, Now);
+        _products.FindAsync(product.Id, Arg.Any<CancellationToken>()).Returns(product);
+        _images.ProcessAsync(Arg.Any<Stream>(), Arg.Any<CancellationToken>())
+            .Returns((ProcessedImage?)null);
+
+        using var stream = new MemoryStream([1, 2, 3]);
+
+        await Should.ThrowAsync<DomainException>(() =>
+            _service.AddImageAsync(product.Id, stream, "nota.jpg", "Arquivo falso"));
+
+        await _storage.DidNotReceive().SaveAsync(
+            Arg.Any<ReadOnlyMemory<byte>>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task RemoveImage_deletes_the_file_after_saving()
+    {
+        var product = Product.Create("Sabonete", CategoryId, Now);
+        var image = product.AddImage("/media/a.webp", "Frente", Now);
+        _products.FindAsync(product.Id, Arg.Any<CancellationToken>()).Returns(product);
+
+        await _service.RemoveImageAsync(product.Id, image.Id);
+
+        product.Images.ShouldBeEmpty();
+        await _storage.Received(1).DeleteAsync("/media/a.webp", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task SetPrimaryImage_moves_the_flag()
+    {
+        var product = Product.Create("Sabonete", CategoryId, Now);
+        var first = product.AddImage("/media/a.webp", "Frente", Now);
+        var second = product.AddImage("/media/b.webp", "Verso", Now);
+        _products.FindAsync(product.Id, Arg.Any<CancellationToken>()).Returns(product);
+
+        await _service.SetPrimaryImageAsync(product.Id, second.Id);
+
+        first.IsPrimary.ShouldBeFalse();
+        second.IsPrimary.ShouldBeTrue();
     }
 
     [Fact]

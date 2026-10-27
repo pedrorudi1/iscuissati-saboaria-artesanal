@@ -157,6 +157,67 @@ public class ProdutosController(ProductService productService, CategoryService c
         }
     }
 
+    [HttpPost("/admin/produtos/{id:guid}/imagens")]
+    [RequestSizeLimit(6 * 1024 * 1024)]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UploadImage(
+        Guid id,
+        IFormFile? file,
+        string? altText,
+        CancellationToken cancellationToken)
+    {
+        if (file is null || file.Length == 0)
+        {
+            return RedirectToEdit(id, erro: "Escolha um arquivo de imagem.");
+        }
+
+        if (string.IsNullOrWhiteSpace(altText))
+        {
+            return RedirectToEdit(id, erro: "Descreva a imagem no texto alternativo (acessibilidade).");
+        }
+
+        try
+        {
+            await using var stream = file.OpenReadStream();
+            await productService.AddImageAsync(id, stream, file.FileName, altText, cancellationToken);
+            return RedirectToEdit(id, ok: "Imagem adicionada.");
+        }
+        catch (DomainException exception)
+        {
+            return RedirectToEdit(id, erro: exception.Message);
+        }
+    }
+
+    [HttpPost("/admin/produtos/{id:guid}/imagens/{imageId:guid}/remover")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RemoveImage(Guid id, Guid imageId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await productService.RemoveImageAsync(id, imageId, cancellationToken);
+            return RedirectToEdit(id, ok: "Imagem removida.");
+        }
+        catch (DomainException exception)
+        {
+            return RedirectToEdit(id, erro: exception.Message);
+        }
+    }
+
+    [HttpPost("/admin/produtos/{id:guid}/imagens/{imageId:guid}/principal")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SetPrimaryImage(Guid id, Guid imageId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await productService.SetPrimaryImageAsync(id, imageId, cancellationToken);
+            return RedirectToEdit(id, ok: "Imagem principal atualizada.");
+        }
+        catch (DomainException exception)
+        {
+            return RedirectToEdit(id, erro: exception.Message);
+        }
+    }
+
     [HttpPost("/admin/produtos/{id:guid}/publicar")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Publish(Guid id, CancellationToken cancellationToken)
@@ -206,6 +267,7 @@ public class ProdutosController(ProductService productService, CategoryService c
             },
             Categories = await categoryService.ListAsync(cancellationToken),
             Variants = product.Variants.ToList(),
+            Images = product.Images.ToList(),
             ImageCount = product.Images.Count,
             IsPublished = product.IsPublished,
         };

@@ -25,7 +25,6 @@ namespace Iscuissatis.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Iscuissatis.Domain.Catalog.Category", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
@@ -67,7 +66,6 @@ namespace Iscuissatis.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Iscuissatis.Domain.Catalog.Product", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("CategoryId")
@@ -127,7 +125,6 @@ namespace Iscuissatis.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Iscuissatis.Domain.Catalog.ProductImage", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("AltText")
@@ -137,6 +134,11 @@ namespace Iscuissatis.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Height")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.Property<bool>("IsPrimary")
                         .HasColumnType("boolean");
@@ -152,6 +154,11 @@ namespace Iscuissatis.Infrastructure.Persistence.Migrations
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Width")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId", "SortOrder");
@@ -162,7 +169,6 @@ namespace Iscuissatis.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Iscuissatis.Domain.Catalog.ProductVariant", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")

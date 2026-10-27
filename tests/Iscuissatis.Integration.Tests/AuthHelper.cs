@@ -62,6 +62,39 @@ public static partial class AuthHelper
         => factory();
 
 
+    public static async Task<HttpResponseMessage> PostMultipartAsync(
+        HttpClient client,
+        string pageUrl,
+        string postUrl,
+        string fileField,
+        string fileName,
+        byte[] fileContent,
+        string contentType,
+        IDictionary<string, string> extraFields)
+    {
+        var page = await client.GetAsync(pageUrl);
+        page.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var token = AntiforgeryToken().Match(await page.Content.ReadAsStringAsync()).Groups["token"].Value;
+        token.ShouldNotBeNullOrWhiteSpace();
+
+        using var form = new MultipartFormDataContent
+        {
+            { new StringContent(token), "__RequestVerificationToken" },
+        };
+
+        foreach (var (key, value) in extraFields)
+        {
+            form.Add(new StringContent(value), key);
+        }
+
+        var file = new ByteArrayContent(fileContent);
+        file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+        form.Add(file, fileField, fileName);
+
+        return await client.PostAsync(postUrl, form);
+    }
+
     /// <summary>O middleware usa redirect relativo; o MVC usa absoluto. Normaliza para o caminho.</summary>
     public static string PathOf(HttpResponseMessage response)
     {
