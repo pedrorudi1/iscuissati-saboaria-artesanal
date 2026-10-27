@@ -14,7 +14,9 @@ public sealed class ProductImage
         string altText,
         int sortOrder,
         bool isPrimary,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        int width = 0,
+        int height = 0)
     {
         Id = Guid.NewGuid();
         ProductId = productId;
@@ -23,6 +25,8 @@ public sealed class ProductImage
         SortOrder = sortOrder;
         IsPrimary = isPrimary;
         CreatedAtUtc = now;
+        Width = width;
+        Height = height;
     }
 
     public Guid Id { get; private set; }
@@ -41,13 +45,20 @@ public sealed class ProductImage
 
     public DateTimeOffset CreatedAtUtc { get; private set; }
 
+    /// <summary>Dimensões finais do arquivo processado (WebP).</summary>
+    public int Width { get; private set; }
+
+    public int Height { get; private set; }
+
     public static ProductImage Create(
         Guid productId,
         string path,
         string altText,
         int sortOrder,
         bool isPrimary,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        int width = 0,
+        int height = 0)
     {
         var trimmedPath = (path ?? string.Empty).Trim();
         var trimmedAlt = (altText ?? string.Empty).Trim();
@@ -67,7 +78,7 @@ public sealed class ProductImage
             throw new DomainException("A ordem da imagem não pode ser negativa.");
         }
 
-        return new ProductImage(productId, trimmedPath, trimmedAlt, sortOrder, isPrimary, now);
+        return new ProductImage(productId, trimmedPath, trimmedAlt, sortOrder, isPrimary, now, width, height);
     }
 
     public void SetAsPrimary()

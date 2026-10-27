@@ -1,3 +1,4 @@
+using Iscuissatis.Application.Storage;
 using Iscuissatis.Domain.Catalog;
 using Iscuissatis.Domain.Common;
 
@@ -10,7 +11,9 @@ namespace Iscuissatis.Application.Catalog;
 public sealed class ProductService(
     IProductRepository products,
     ICategoryRepository categories,
-    TimeProvider clock)
+    TimeProvider clock,
+    IFileStorage storage,
+    IImageProcessor imageProcessor)
 {
     private const int MaxSlugAttempts = 50;
 
@@ -112,6 +115,54 @@ public sealed class ProductService(
             ?? throw new DomainException("Variação não encontrada.");
 
         variant.AdjustStock(delta, clock.GetUtcNow());
+        await products.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<ProductImage> AddImageAsync(
+        Guid productId,
+        Stream content,
+        string fileName,
+        string altText,
+        CancellationToken cancellationToken = default)
+    {
+        var product = await GetAsync(productId, cancellationToken);
+
+        var processed = await imageProcessor.ProcessAsync(content, cancellationToken)
+            ?? throw new DomainException("O arquivo enviado não é uma imagem válida (use JPEG, PNG ou WebP).");
+
+        var path = await storage.SaveAsync(
+            processed.Content,
+            Path.ChangeExtension(fileName, processed.Extension),
+            processed.ContentType,
+            cancellationToken);
+
+        var image = product.AddImage(path, altText, clock.GetUtcNow(), processed.Width, processed.Height);
+
+        await products.SaveChangesAsync(cancellationToken);
+
+        return image;
+    }
+
+    public async Task RemoveImageAsync(
+        Guid productId,
+        Guid imageId,
+        CancellationToken cancellationToken = default)
+    {
+        var product = await GetAsync(productId, cancellationToken);
+        var image = product.RemoveImage(imageId, clock.GetUtcNow());
+
+        await products.SaveChangesAsync(cancellationToken);
+        await storage.DeleteAsync(image.Path, cancellationToken);
+    }
+
+    public async Task SetPrimaryImageAsync(
+        Guid productId,
+        Guid imageId,
+        CancellationToken cancellationToken = default)
+    {
+        var product = await GetAsync(productId, cancellationToken);
+        product.SetPrimaryImage(imageId, clock.GetUtcNow());
+
         await products.SaveChangesAsync(cancellationToken);
     }
 

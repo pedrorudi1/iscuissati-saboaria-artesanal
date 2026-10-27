@@ -79,6 +79,8 @@ public static class CatalogConfigurations
             entity.Property(image => image.Id).ValueGeneratedNever();
             entity.Property(image => image.Path).HasMaxLength(300).IsRequired();
             entity.Property(image => image.AltText).HasMaxLength(200).IsRequired();
+            entity.Property(image => image.Width).HasDefaultValue(0);
+            entity.Property(image => image.Height).HasDefaultValue(0);
             entity.HasIndex(image => new { image.ProductId, image.SortOrder });
         });
     }

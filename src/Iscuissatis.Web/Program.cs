@@ -1,8 +1,10 @@
 using Iscuissatis.Application.Identity;
 using Iscuissatis.Infrastructure.Identity;
 using Iscuissatis.Application.Catalog;
+using Iscuissatis.Application.Storage;
 using Iscuissatis.Infrastructure.Persistence;
 using Iscuissatis.Infrastructure.Persistence.Repositories;
+using Iscuissatis.Infrastructure.Storage;
 using Iscuissatis.Web.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -57,6 +59,9 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ProductService>();
+builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection(StorageOptions.SectionName));
+builder.Services.AddSingleton<IFileStorage, LocalFileStorage>();
+builder.Services.AddSingleton<IImageProcessor, SkiaImageProcessor>();
 builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddHealthChecks()
@@ -87,6 +92,15 @@ app.UseMiddleware<RequireAdminTwoFactorMiddleware>();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+
+var storageOptions = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<StorageOptions>>().Value;
+Directory.CreateDirectory(storageOptions.RootPath);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        Path.GetFullPath(storageOptions.RootPath)),
+    RequestPath = storageOptions.PublicPrefix,
+});
 app.MapHealthChecks("/health");
 
 app.MapControllerRoute(
