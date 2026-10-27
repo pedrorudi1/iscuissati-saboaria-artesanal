@@ -13,16 +13,53 @@ public enum OrderStatus
     Refunded = 6,
 }
 
-public sealed record ShippingAddress(
-    string Recipient,
-    string Street,
-    string Number,
-    string? Complement,
-    string District,
-    string City,
-    string State,
-    string ZipCode)
+/// <summary>
+/// Endereço congelado no pedido. É classe (e não record) de propósito: o EF mapeia
+/// como owned type com chave de identificação e não consegue atualizar o pedido
+/// quando o valor é imutável por referência.
+/// </summary>
+public sealed class ShippingAddress
 {
+    private ShippingAddress()
+    {
+    }
+
+    private ShippingAddress(
+        string recipient,
+        string street,
+        string number,
+        string? complement,
+        string district,
+        string city,
+        string state,
+        string zipCode)
+    {
+        Recipient = recipient;
+        Street = street;
+        Number = number;
+        Complement = complement;
+        District = district;
+        City = city;
+        State = state;
+        ZipCode = zipCode;
+    }
+
+    public string Recipient { get; private set; } = string.Empty;
+
+    public string Street { get; private set; } = string.Empty;
+
+    public string Number { get; private set; } = string.Empty;
+
+    public string? Complement { get; private set; }
+
+    public string District { get; private set; } = string.Empty;
+
+    public string City { get; private set; } = string.Empty;
+
+    public string State { get; private set; } = string.Empty;
+
+    public string ZipCode { get; private set; } = string.Empty;
+
     public static ShippingAddress Create(
         string recipient,
         string street,
@@ -180,7 +217,13 @@ public sealed class Order
             throw new DomainException("Não é possível criar pedido sem itens.");
         }
 
-        var order = new Order(number.Trim(), customerId, guestEmail?.Trim().ToLowerInvariant(), address, now);
+        // Clona o endereço: o EF mapeia como owned type e a mesma instância não pode
+        // pertencer a dois pedidos.
+        var addressCopy = ShippingAddress.Create(
+            address.Recipient, address.Street, address.Number, address.Complement,
+            address.District, address.City, address.State, address.ZipCode);
+
+        var order = new Order(number.Trim(), customerId, guestEmail?.Trim().ToLowerInvariant(), addressCopy, now);
 
         foreach (var item in items)
         {
