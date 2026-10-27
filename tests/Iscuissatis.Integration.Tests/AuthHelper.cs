@@ -61,6 +61,15 @@ public static partial class AuthHelper
     public static HttpClient CreateBrowser(Func<HttpClient> factory)
         => factory();
 
+
+    /// <summary>O middleware usa redirect relativo; o MVC usa absoluto. Normaliza para o caminho.</summary>
+    public static string PathOf(HttpResponseMessage response)
+    {
+        var location = response.Headers.Location;
+        location.ShouldNotBeNull();
+        return location!.IsAbsoluteUri ? location.AbsolutePath : location.OriginalString.Split('?')[0];
+    }
+
     [GeneratedRegex("name=\"__RequestVerificationToken\"[^>]*value=\"(?<token>[^\"]+)\"")]
     private static partial Regex AntiforgeryToken();
 }

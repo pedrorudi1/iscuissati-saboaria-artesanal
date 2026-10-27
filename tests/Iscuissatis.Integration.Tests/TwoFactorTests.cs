@@ -22,7 +22,7 @@ public class TwoFactorTests(IntegrationTestFixture fixture)
         var response = await client.GetAsync("/admin");
 
         response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-        response.Headers.Location!.AbsolutePath.ShouldBe("/admin/seguranca/2fa");
+        AuthHelper.PathOf(response).ShouldBe("/admin/seguranca/2fa");
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public class TwoFactorTests(IntegrationTestFixture fixture)
             new Dictionary<string, string> { ["code"] = Totp.Compute(key!) });
 
         activation.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-        activation.Headers.Location!.AbsolutePath.ShouldBe("/admin/seguranca/codigos-recuperacao");
+        AuthHelper.PathOf(activation).ShouldBe("/admin/seguranca/codigos-recuperacao");
 
         var user = await GetUserAsync(email);
         user.TwoFactorEnabled.ShouldBeTrue();
@@ -67,7 +67,7 @@ public class TwoFactorTests(IntegrationTestFixture fixture)
             });
 
         login.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-        login.Headers.Location!.AbsolutePath.ShouldBe("/entrar/dois-fatores");
+        AuthHelper.PathOf(login).ShouldBe("/entrar/dois-fatores");
 
         var challenge = await AuthHelper.PostWithAntiforgeryAsync(
             loginClient, "/entrar/dois-fatores", "/entrar/dois-fatores",
@@ -90,8 +90,11 @@ public class TwoFactorTests(IntegrationTestFixture fixture)
             client, "/admin/seguranca/2fa", "/admin/seguranca/2fa/ativar",
             new Dictionary<string, string> { ["code"] = "000000" });
 
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        (await response.Content.ReadAsStringAsync()).ShouldContain("Código inválido");
+        response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+        AuthHelper.PathOf(response).ShouldBe("/admin/seguranca/2fa");
+
+        var setupAfterError = await client.GetAsync("/admin/seguranca/2fa");
+        (await setupAfterError.Content.ReadAsStringAsync()).ShouldContain("Código inválido");
 
         var user = await GetUserAsync(email);
         user.TwoFactorEnabled.ShouldBeFalse();

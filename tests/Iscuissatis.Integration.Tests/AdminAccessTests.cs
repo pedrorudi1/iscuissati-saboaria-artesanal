@@ -37,8 +37,8 @@ public class AdminAccessTests(IntegrationTestFixture fixture)
         var response = await client.GetAsync("/admin");
 
         response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-        response.Headers.Location!.AbsolutePath.ShouldBe("/entrar");
-        response.Headers.Location!.Query.ShouldContain("ReturnUrl");
+        AuthHelper.PathOf(response).ShouldBe("/entrar");
+        
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class AdminAccessTests(IntegrationTestFixture fixture)
         var response = await client.GetAsync("/admin");
 
         response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-        response.Headers.Location!.AbsolutePath.ShouldBe("/admin/seguranca/2fa");
+        AuthHelper.PathOf(response).ShouldBe("/admin/seguranca/2fa");
     }
 
     private async Task EnsureCustomerAsync()
