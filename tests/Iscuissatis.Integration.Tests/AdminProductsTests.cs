@@ -97,9 +97,9 @@ public class AdminProductsTests(IntegrationTestFixture fixture)
 
         publish.StatusCode.ShouldBe(HttpStatusCode.Redirect);
 
-        var page = await client.GetAsync($"/admin/produtos/{productId}/editar");
+        var page = await client.GetAsync(publish.Headers.Location!.OriginalString);
         var html = System.Net.WebUtility.HtmlDecode(await page.Content.ReadAsStringAsync());
-        html.ShouldContain("imagem");
+        html.ShouldContain("Para publicar, adicione ao menos uma imagem");
 
         using var scope = fixture.Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -143,20 +143,9 @@ public class AdminProductsTests(IntegrationTestFixture fixture)
                 ["NewVariant.WeightGrams"] = "100",
             });
 
-        var page = await client.GetAsync($"/admin/produtos/{second}/editar");
+        var page = await client.GetAsync(secondAdd.Headers.Location!.OriginalString);
         var html = System.Net.WebUtility.HtmlDecode(await page.Content.ReadAsStringAsync());
-
-        if (!html.Contains("já está em uso", StringComparison.OrdinalIgnoreCase))
-        {
-            using var debugScope = fixture.Factory.Services.CreateScope();
-            var debugDb = debugScope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var firstCount = await debugDb.ProductVariants.CountAsync(v => v.ProductId == first);
-            var secondCount = await debugDb.ProductVariants.CountAsync(v => v.ProductId == second);
-            throw new Xunit.Sdk.XunitException(
-                $"secondAdd={secondAdd.StatusCode} location={secondAdd.Headers.Location}; " +
-                $"variacoes first={firstCount} second={secondCount}; sku={sku}; " +
-                $"html trecho={(html.Length > 600 ? html[..600] : html).Replace("\n", " ")}");
-        }
+        html.ShouldContain("já está em uso por outro produto");
     }
 
     private async Task<Guid> CreateCategoryAsync(string name)
