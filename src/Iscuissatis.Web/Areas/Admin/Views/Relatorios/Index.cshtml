@@ -1,0 +1,79 @@
+@model Iscuissatis.Web.Areas.Admin.Controllers.ReportsViewModel
+@{
+    var from = ViewData["From"] as string;
+    var to = ViewData["To"] as string;
+}
+
+<form method="get" class="card grid gap-4 sm:grid-cols-[180px_180px_auto_auto] sm:items-end">
+    <div class="field !mb-0">
+        <label for="de">De</label>
+        <input id="de" name="de" type="date" value="@from"/>
+    </div>
+    <div class="field !mb-0">
+        <label for="ate">Até</label>
+        <input id="ate" name="ate" type="date" value="@to"/>
+    </div>
+    <button type="submit" class="btn btn-outline">Aplicar</button>
+    <a class="btn btn-primary" href="/admin/relatorios/vendas.csv?de=@from&ate=@to">Exportar CSV</a>
+</form>
+
+<section class="mt-6 grid gap-4 sm:grid-cols-3">
+    <article class="card">
+        <p class="text-[11px] uppercase tracking-[0.18em] text-muted">Faturamento</p>
+        <p class="mt-2 font-display text-2xl">R$ @Model.Summary.Revenue.ToString("N2")</p>
+    </article>
+    <article class="card">
+        <p class="text-[11px] uppercase tracking-[0.18em] text-muted">Pedidos pagos</p>
+        <p class="mt-2 font-display text-2xl">@Model.Summary.PaidOrders</p>
+    </article>
+    <article class="card">
+        <p class="text-[11px] uppercase tracking-[0.18em] text-muted">Ticket médio</p>
+        <p class="mt-2 font-display text-2xl">R$ @Model.Summary.AverageTicket.ToString("N2")</p>
+    </article>
+</section>
+
+<section class="mt-8 card overflow-x-auto p-0">
+    <table class="w-full text-left text-sm">
+        <thead class="bg-bg">
+            <tr class="font-display uppercase tracking-[0.08em] text-[11px] text-muted">
+                <th scope="col" class="px-5 py-3">Dia</th>
+                <th scope="col" class="px-5 py-3">Pedidos pagos</th>
+                <th scope="col" class="px-5 py-3 text-right">Faturamento</th>
+            </tr>
+        </thead>
+        <tbody>
+        @if (Model.Daily.Count == 0)
+        {
+            <tr><td colspan="3" class="px-5 py-4 text-muted">Nenhum pedido pago no período.</td></tr>
+        }
+        @foreach (var row in Model.Daily)
+        {
+            <tr class="border-t border-line">
+                <td class="px-5 py-3">@row.Day.ToString("dd/MM/yyyy")</td>
+                <td class="px-5 py-3">@row.Orders</td>
+                <td class="px-5 py-3 text-right">R$ @row.Revenue.ToString("N2")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</section>
+
+<div class="card mt-6">
+    <h2 class="text-lg">Produtos mais vendidos</h2>
+    @if (Model.TopProducts.Count == 0)
+    {
+        <p class="mt-2 text-sm text-muted">Sem dados no período.</p>
+    }
+    else
+    {
+        <ul class="mt-3 space-y-2 text-sm">
+            @foreach (var item in Model.TopProducts)
+            {
+                <li class="flex justify-between border-b border-line pb-2">
+                    <span>@item.ProductName <span class="text-muted">(@item.VariantName)</span></span>
+                    <span>@item.Quantity un. · R$ @item.Revenue.ToString("N2")</span>
+                </li>
+            }
+        </ul>
+    }
+</div>

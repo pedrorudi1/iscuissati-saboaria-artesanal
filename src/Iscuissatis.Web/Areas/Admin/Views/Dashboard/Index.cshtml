@@ -1,38 +1,85 @@
+@using Iscuissatis.Application.Reporting
 @{
-    ViewData["Title"] = "Dashboard";
+    var month = ViewData["Month"] as DashboardSummary ?? new DashboardSummary(0, 0, 0, 0, 0);
+    var today = ViewData["Today"] as DashboardSummary ?? new DashboardSummary(0, 0, 0, 0, 0);
+    var lowStock = ViewData["LowStock"] as IReadOnlyList<LowStockItem> ?? [];
+    var top = ViewData["TopProducts"] as IReadOnlyList<TopProduct> ?? [];
 }
 
 <section class="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
     <article class="card">
+        <p class="text-[11px] uppercase tracking-[0.18em] text-muted">Faturamento do mês</p>
+        <p class="mt-2 font-display text-2xl">R$ @month.Revenue.ToString("N2")</p>
+        <p class="mt-1 text-xs text-muted">@month.PaidOrders pedido(s) pago(s) · ticket R$ @month.AverageTicket.ToString("N2")</p>
+    </article>
+    <article class="card">
         <p class="text-[11px] uppercase tracking-[0.18em] text-muted">Vendas hoje</p>
-        <p class="mt-2 font-display text-3xl">—</p>
-        <p class="mt-1 text-xs text-muted">Aparece quando os pedidos existirem (Fase 8).</p>
+        <p class="mt-2 font-display text-2xl">R$ @today.Revenue.ToString("N2")</p>
+        <p class="mt-1 text-xs text-muted">@today.OrdersToday pedido(s) criado(s) hoje</p>
     </article>
     <article class="card">
-        <p class="text-[11px] uppercase tracking-[0.18em] text-muted">Pedidos pendentes</p>
-        <p class="mt-2 font-display text-3xl">—</p>
-        <p class="mt-1 text-xs text-muted">Aguardando pagamento ou preparo.</p>
-    </article>
-    <article class="card">
-        <p class="text-[11px] uppercase tracking-[0.18em] text-muted">Produtos publicados</p>
-        <p class="mt-2 font-display text-3xl">—</p>
-        <p class="mt-1 text-xs text-muted">O catálogo entra na Fase 2.</p>
+        <p class="text-[11px] uppercase tracking-[0.18em] text-muted">Aguardando pagamento</p>
+        <p class="mt-2 font-display text-2xl">@month.PendingPaymentOrders</p>
+        <p class="mt-1 text-xs text-muted">no mês corrente</p>
     </article>
     <article class="card">
         <p class="text-[11px] uppercase tracking-[0.18em] text-muted">Estoque baixo</p>
-        <p class="mt-2 font-display text-3xl">—</p>
-        <p class="mt-1 text-xs text-muted">Alerta a partir de 5 unidades.</p>
+        <p class="mt-2 font-display text-2xl">@lowStock.Count</p>
+        <p class="mt-1 text-xs text-muted">variações com 5 unidades ou menos</p>
     </article>
 </section>
 
-<section class="card mt-8">
-    <h2 class="text-xl">Próximos passos</h2>
-    <ol class="mt-4 space-y-2 text-sm text-muted list-decimal list-inside">
-        <li>Cadastro de categorias, produtos e variações (Fase 2).</li>
-        <li>Vitrine e página de produto (Fase 3).</li>
-        <li>Carrinho e checkout com Pix (Fases 4 e 5).</li>
-    </ol>
-    <p class="mt-4 text-sm">
-        <a class="underline text-primary" href="/">Ver a loja</a>
-    </p>
+<p class="mt-3 text-xs text-muted">
+    Faturamento considera apenas pedidos pagos. Como o pagamento entra na Fase 5, os valores ficam
+    zerados até o gateway estar ativo — os pedidos criados aparecem em "aguardando pagamento".
+</p>
+
+<section class="mt-8 grid gap-6 lg:grid-cols-2">
+    <div class="card">
+        <div class="flex items-center justify-between gap-3">
+            <h2 class="text-xl">Mais vendidos no mês</h2>
+            <a class="text-xs underline text-primary" href="/admin/relatorios">Relatórios</a>
+        </div>
+
+        @if (top.Count == 0)
+        {
+            <p class="mt-3 text-sm text-muted">Sem vendas pagas neste mês.</p>
+        }
+        else
+        {
+            <ul class="mt-4 space-y-2 text-sm">
+                @foreach (var item in top)
+                {
+                    <li class="flex justify-between gap-3 border-b border-line pb-2">
+                        <span>@item.ProductName <span class="text-muted">(@item.VariantName)</span></span>
+                        <span class="whitespace-nowrap">@item.Quantity un. · R$ @item.Revenue.ToString("N2")</span>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+
+    <div class="card">
+        <h2 class="text-xl">Repor estoque</h2>
+        @if (lowStock.Count == 0)
+        {
+            <p class="mt-3 text-sm text-muted">Nenhuma variação abaixo do limite.</p>
+        }
+        else
+        {
+            <ul class="mt-4 space-y-2 text-sm">
+                @foreach (var item in lowStock)
+                {
+                    <li class="flex justify-between gap-3 border-b border-line pb-2">
+                        <span>@item.ProductName <span class="text-muted">(@item.VariantName)</span>
+                            <span class="block font-mono text-[11px] text-muted">@item.Sku</span>
+                        </span>
+                        <span class="whitespace-nowrap @(item.StockQuantity == 0 ? "text-primary font-bold" : "")">
+                            @item.StockQuantity un.
+                        </span>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
 </section>
