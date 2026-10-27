@@ -94,7 +94,8 @@ public class TwoFactorTests(IntegrationTestFixture fixture)
         AuthHelper.PathOf(response).ShouldBe("/admin/seguranca/2fa");
 
         var setupAfterError = await client.GetAsync("/admin/seguranca/2fa?erro=codigo");
-        (await setupAfterError.Content.ReadAsStringAsync()).ShouldContain("Código inválido");
+        var errorHtml = System.Net.WebUtility.HtmlDecode(await setupAfterError.Content.ReadAsStringAsync());
+        errorHtml.ShouldContain("Código inválido");
 
         var user = await GetUserAsync(email);
         user.TwoFactorEnabled.ShouldBeFalse();
