@@ -77,6 +77,7 @@ app.UseStatusCodePagesWithReExecute("/acesso-negado");
 
 app.UseRouting();
 app.UseAuthentication();
+app.UseMiddleware<RequireAdminTwoFactorMiddleware>();
 app.UseAuthorization();
 
 app.MapStaticAssets();

@@ -41,7 +41,7 @@ public class LayoutTests(IntegrationTestFixture fixture)
         var client = await AuthHelper.SignInAsync(
             fixture.Factory, IntegrationTestFixture.AdminEmail, IntegrationTestFixture.AdminPassword);
 
-        var response = await client.GetAsync("/admin");
+        var response = await client.GetAsync("/admin/seguranca/2fa");
         var html = await response.Content.ReadAsStringAsync();
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);

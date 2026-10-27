@@ -1,3 +1,4 @@
+using Iscuissatis.Application.Identity;
 using Iscuissatis.Infrastructure.Identity;
 using Iscuissatis.Web.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -6,7 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Iscuissatis.Web.Controllers;
 
-public class AccountController(SignInManager<ApplicationUser> signInManager) : Controller
+public class AccountController(
+    SignInManager<ApplicationUser> signInManager,
+    UserManager<ApplicationUser> userManager) : Controller
 {
     [HttpGet("/entrar")]
     [AllowAnonymous]
@@ -33,8 +36,18 @@ public class AccountController(SignInManager<ApplicationUser> signInManager) : C
         var result = await signInManager.PasswordSignInAsync(
             model.Email, model.Password, model.RememberMe, lockoutOnFailure: true);
 
+        if (result.RequiresTwoFactor)
+        {
+            return RedirectToAction(nameof(TwoFactor), new { returnUrl = model.ReturnUrl, rememberMe = model.RememberMe });
+        }
+
         if (result.Succeeded)
         {
+            if (await RequiresTwoFactorSetupAsync(model.Email))
+            {
+                return Redirect($"/admin/seguranca/2fa?returnUrl={Uri.EscapeDataString(model.ReturnUrl ?? "/admin")}");
+            }
+
             return RedirectToLocal(model.ReturnUrl);
         }
 
@@ -45,6 +58,51 @@ public class AccountController(SignInManager<ApplicationUser> signInManager) : C
         }
 
         ModelState.AddModelError(string.Empty, "E-mail ou senha incorretos.");
+        return View(model);
+    }
+
+    [HttpGet("/entrar/dois-fatores")]
+    [AllowAnonymous]
+    public async Task<IActionResult> TwoFactor(string? returnUrl = null, bool rememberMe = false)
+    {
+        if (await signInManager.GetTwoFactorAuthenticationUserAsync() is null)
+        {
+            return RedirectToAction(nameof(Login));
+        }
+
+        return View(new TwoFactorViewModel { ReturnUrl = returnUrl, RememberMe = rememberMe });
+    }
+
+    [HttpPost("/entrar/dois-fatores")]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> TwoFactor(TwoFactorViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        if (await signInManager.GetTwoFactorAuthenticationUserAsync() is null)
+        {
+            return RedirectToAction(nameof(Login));
+        }
+
+        var code = model.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
+        var result = await signInManager.TwoFactorAuthenticatorSignInAsync(code, model.RememberMe, rememberClient: false);
+
+        if (result.Succeeded)
+        {
+            return RedirectToLocal(model.ReturnUrl);
+        }
+
+        if (result.IsLockedOut)
+        {
+            ModelState.AddModelError(string.Empty, "Conta temporariamente bloqueada. Tente novamente em 15 minutos.");
+            return View(model);
+        }
+
+        ModelState.AddModelError(string.Empty, "Código inválido ou expirado. Gere um novo código no aplicativo autenticador.");
         return View(model);
     }
 
@@ -60,6 +118,18 @@ public class AccountController(SignInManager<ApplicationUser> signInManager) : C
     [HttpGet("/acesso-negado")]
     [AllowAnonymous]
     public IActionResult AccessDenied() => View();
+
+    private async Task<bool> RequiresTwoFactorSetupAsync(string email)
+    {
+        var user = await userManager.FindByEmailAsync(email);
+        if (user is null || user.TwoFactorEnabled)
+        {
+            return false;
+        }
+
+        return await userManager.IsInRoleAsync(user, Roles.Admin)
+            || await userManager.IsInRoleAsync(user, Roles.Operador);
+    }
 
     private IActionResult RedirectToLocal(string? returnUrl)
     {
