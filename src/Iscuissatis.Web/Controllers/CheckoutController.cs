@@ -70,7 +70,12 @@ public class CheckoutController(
 
             if (User.Identity?.IsAuthenticated == true)
             {
-                customerId = (await userManager.GetUserAsync(User))?.Id;
+                // O Id do Identity é string; o pedido usa Guid.
+                var identityUser = await userManager.GetUserAsync(User);
+                if (Guid.TryParse(identityUser?.Id, out var parsedCustomerId))
+                {
+                    customerId = parsedCustomerId;
+                }
             }
 
             var order = await orderService.PlaceOrderAsync(
