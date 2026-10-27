@@ -1,0 +1,76 @@
+@model IReadOnlyList<Iscuissatis.Domain.Catalog.Category>
+@{
+    ViewData["Title"] = "Categorias";
+}
+
+<div class="flex flex-wrap items-center justify-between gap-4">
+    <p class="text-sm text-muted">Organizam a vitrine e as páginas de listagem.</p>
+    <a class="btn btn-primary" asp-action="Create">Nova categoria</a>
+</div>
+
+@if (TempData["CategoryMessage"] is string message)
+{
+    <p class="card mt-6 border-l-4 border-l-olive text-sm" role="status">@message</p>
+}
+
+@if (Model.Count == 0)
+{
+    <div class="card mt-6 text-center">
+        <p class="font-display uppercase tracking-[0.08em] text-sm text-muted">Nenhuma categoria ainda</p>
+        <p class="mt-2 text-sm text-muted">Comece por “Sabonetes em barra”, “Kits e presentes” e “Novidades”.</p>
+        <p class="mt-4"><a class="btn btn-outline" asp-action="Create">Criar a primeira</a></p>
+    </div>
+}
+else
+{
+    <div class="card mt-6 overflow-x-auto p-0">
+        <table class="w-full text-left text-sm">
+            <thead class="bg-bg">
+                <tr class="font-display uppercase tracking-[0.08em] text-[11px] text-muted">
+                    <th scope="col" class="px-5 py-3">Nome</th>
+                    <th scope="col" class="px-5 py-3">Endereço</th>
+                    <th scope="col" class="px-5 py-3">Ordem</th>
+                    <th scope="col" class="px-5 py-3">Situação</th>
+                    <th scope="col" class="px-5 py-3 text-right">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var category in Model)
+            {
+                <tr class="border-t border-line">
+                    <td class="px-5 py-3">
+                        <span class="font-display uppercase tracking-[0.04em]">@category.Name</span>
+                        @if (!string.IsNullOrWhiteSpace(category.Description))
+                        {
+                            <span class="block text-xs text-muted">@category.Description</span>
+                        }
+                    </td>
+                    <td class="px-5 py-3 font-mono text-xs text-muted">/@category.Slug</td>
+                    <td class="px-5 py-3">@category.SortOrder</td>
+                    <td class="px-5 py-3">
+                        @if (category.IsActive)
+                        {
+                            <span class="text-olive-dark font-bold text-xs uppercase tracking-[0.1em]">Ativa</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted font-bold text-xs uppercase tracking-[0.1em]">Inativa</span>
+                        }
+                    </td>
+                    <td class="px-5 py-3">
+                        <div class="flex items-center justify-end gap-3">
+                            <a class="text-primary underline text-xs" asp-action="Edit" asp-route-id="@category.Id">Editar</a>
+                            <form method="post" asp-action="ToggleActive" asp-route-id="@category.Id">
+                                <input type="hidden" name="active" value="@(category.IsActive ? "false" : "true")"/>
+                                <button type="submit" class="text-xs underline text-muted hover:text-primary">
+                                    @(category.IsActive ? "Desativar" : "Ativar")
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
