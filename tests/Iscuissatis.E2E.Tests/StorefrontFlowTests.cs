@@ -47,6 +47,11 @@ public class StorefrontFlowTests(BrowserFixture fixture)
             await page.Locator("#state").FillAsync("SP");
             await page.Locator("#GuestEmail").FillAsync($"e2e.{Guid.NewGuid():N}@teste.local");
 
+            // Sai do CEP para a página cotar o frete e espera as opções aparecerem.
+            await page.Locator("#zipCode").BlurAsync();
+            await page.Locator("input[name='ShippingCode']").First.WaitForAsync(
+                new LocatorWaitForOptions { Timeout = 15000 });
+
             await page.GetByRole(AriaRole.Button, new() { Name = "Criar pedido" }).ClickAsync();
             await page.WaitForURLAsync("**/pedido/**");
 
