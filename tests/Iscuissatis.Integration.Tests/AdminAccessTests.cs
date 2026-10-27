@@ -37,7 +37,8 @@ public class AdminAccessTests(IntegrationTestFixture fixture)
         var response = await client.GetAsync("/admin");
 
         response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
-        response.Headers.Location!.OriginalString.ShouldStartWith("/entrar");
+        response.Headers.Location!.AbsolutePath.ShouldBe("/entrar");
+        response.Headers.Location!.Query.ShouldContain("ReturnUrl");
     }
 
     [Fact]
