@@ -1,3 +1,4 @@
+using Iscuissatis.Application.Catalog.Public;
 using Iscuissatis.Application.Sales;
 using Iscuissatis.Domain.Sales;
 using Microsoft.EntityFrameworkCore;
@@ -63,6 +64,52 @@ public sealed class OrderRepository(AppDbContext dbContext) : IOrderRepository
             .Where(order => order.CustomerId == customerId)
             .OrderByDescending(order => order.CreatedAtUtc)
             .ToListAsync(cancellationToken);
+
+    public async Task<PagedResult<OrderSummary>> ListAsync(
+        string? search,
+        OrderStatus? status,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+
+        var query = dbContext.Orders.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = $"%{search.Trim()}%";
+            query = query.Where(order =>
+                EF.Functions.ILike(order.Number, term)
+                || (order.GuestEmail != null && EF.Functions.ILike(order.GuestEmail, term))
+                || EF.Functions.ILike(order.ShippingAddress.Recipient, term));
+        }
+
+        if (status is not null)
+        {
+            query = query.Where(order => order.Status == status);
+        }
+
+        var total = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderByDescending(order => order.CreatedAtUtc)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(order => new OrderSummary(
+                order.Id,
+                order.Number,
+                order.GuestEmail,
+                order.ShippingAddress.Recipient,
+                order.Status,
+                order.Subtotal + order.Shipping - order.Discount,
+                order.Items.Count,
+                order.CreatedAtUtc))
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<OrderSummary>(items, page, pageSize, total);
+    }
 
     public async Task ReleaseReservationsAsync(
         Guid orderId,
