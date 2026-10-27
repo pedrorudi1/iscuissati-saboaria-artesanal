@@ -1,4 +1,5 @@
 using Iscuissatis.Application.Identity;
+using Iscuissatis.Application.Notifications;
 using Iscuissatis.Application.Sales;
 using Iscuissatis.Domain.Common;
 using Iscuissatis.Domain.Sales;
@@ -9,7 +10,7 @@ namespace Iscuissatis.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
 [Authorize(Roles = Roles.AdminArea)]
-public class PedidosController(IOrderRepository orders, OrderService orderService) : Controller
+public class PedidosController(IOrderRepository orders, OrderService orderService, IOrderEmailNotifier orderEmails) : Controller
 {
     [HttpGet("/admin/pedidos")]
     public async Task<IActionResult> Index(
@@ -52,7 +53,9 @@ public class PedidosController(IOrderRepository orders, OrderService orderServic
     {
         try
         {
-            await orderService.CancelAsync(id, cancellationToken);
+            var order = await orderService.CancelAsync(id, cancellationToken);
+            await orderEmails.NotifyAsync(order, OrderEmailKind.Canceled, cancellationToken);
+
             return RedirectToAction(nameof(Details), new { id, ok = "Pedido cancelado e estoque devolvido." });
         }
         catch (DomainException exception)

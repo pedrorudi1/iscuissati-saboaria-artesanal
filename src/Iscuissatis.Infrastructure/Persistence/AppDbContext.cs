@@ -1,6 +1,7 @@
 using Iscuissatis.Domain.Catalog;
 using Iscuissatis.Domain.Sales;
 using Iscuissatis.Infrastructure.Identity;
+using Iscuissatis.Infrastructure.Notifications;
 using Iscuissatis.Infrastructure.Persistence.Configurations;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<Address> Addresses => Set<Address>();
 
+    public DbSet<SentOrderEmail> SentOrderEmails => Set<SentOrderEmail>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -42,5 +45,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
         builder.ApplyCatalog();
         builder.ApplySales();
+        builder.ApplyNotifications();
     }
 }
