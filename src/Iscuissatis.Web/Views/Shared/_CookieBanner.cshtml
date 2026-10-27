@@ -1,0 +1,62 @@
+<div id="cookie-banner" class="fixed inset-x-0 bottom-0 z-50 bg-ink text-surface" hidden>
+    <div class="container-page flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between">
+        <p class="text-sm text-line">
+            Usamos cookies essenciais para a sacola e o login. Com seu consentimento, também
+            medimos audiência para melhorar a loja. Veja a
+            <a class="underline text-surface" href="/privacidade">política de privacidade</a>.
+        </p>
+        <div class="flex shrink-0 gap-3">
+            <button type="button" data-consent="denied" class="btn btn-outline !min-h-11 !border-surface !text-surface !px-4 !text-xs">
+                Só o essencial
+            </button>
+            <button type="button" data-consent="granted" class="btn btn-primary !min-h-11 !px-4 !text-xs">
+                Aceitar cookies
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var KEY = 'iscuissati_consent';
+        var banner = document.getElementById('cookie-banner');
+        if (!banner) return;
+
+        function loadAnalytics() {
+            var meta = document.querySelector('meta[name="ga4-id"]');
+            var id = meta && meta.getAttribute('content');
+            if (!id) return; // sem ID configurado, nada é carregado
+
+            var script = document.createElement('script');
+            script.async = true;
+            script.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(id);
+            document.head.appendChild(script);
+
+            window.dataLayer = window.dataLayer || [];
+            window.gtag = function () { window.dataLayer.push(arguments); };
+            window.gtag('js', new Date());
+            window.gtag('config', id);
+        }
+
+        var stored = null;
+        try { stored = localStorage.getItem(KEY); } catch (e) { stored = null; }
+
+        if (!stored) {
+            banner.hidden = false;
+        } else if (stored === 'granted') {
+            loadAnalytics();
+        }
+
+        banner.addEventListener('click', function (event) {
+            var button = event.target.closest('button[data-consent]');
+            if (!button) return;
+
+            var value = button.getAttribute('data-consent');
+            try { localStorage.setItem(KEY, value); } catch (e) { /* navegação privada */ }
+
+            banner.hidden = true;
+
+            if (value === 'granted') loadAnalytics();
+        });
+    })();
+</script>

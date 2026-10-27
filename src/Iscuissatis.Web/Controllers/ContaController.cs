@@ -12,6 +12,7 @@ namespace Iscuissatis.Web.Controllers;
 [Authorize(Roles = Roles.Cliente)]
 public class ContaController(
     UserManager<ApplicationUser> userManager,
+    SignInManager<ApplicationUser> signInManager,
     IOrderRepository orders,
     AddressService addressService) : Controller
 {
@@ -131,6 +132,110 @@ public class ContaController(
         }
 
         return RedirectToAction(nameof(Addresses));
+    }
+
+    [HttpGet("/minha-conta/dados")]
+    public IActionResult MinhaContaDados()
+    {
+        ViewData["Title"] = "Meus dados";
+        return View("Dados");
+    }
+
+    [HttpGet("/minha-conta/dados/exportar")]
+    public async Task<IActionResult> ExportarDados(CancellationToken cancellationToken)
+    {
+        var customerId = await GetCustomerIdAsync();
+
+        if (customerId is null)
+        {
+            return Challenge();
+        }
+
+        var user = await userManager.GetUserAsync(User);
+        var addresses = await addressService.ListAsync(customerId.Value, cancellationToken);
+        var ordersOfCustomer = await orders.ListByCustomerAsync(customerId.Value, cancellationToken);
+
+        var payload = new
+        {
+            conta = new
+            {
+                nome = user?.FullName,
+                email = user?.Email,
+                criadaEm = user?.CreatedAtUtc,
+            },
+            enderecos = addresses.Select(address => new
+            {
+                rotulo = address.Label,
+                destinatario = address.Recipient,
+                endereco = $"{address.Street}, {address.Number} {address.Complement}",
+                bairro = address.District,
+                cidade = address.City,
+                estado = address.State,
+                cep = address.ZipCode,
+            }),
+            pedidos = ordersOfCustomer.Select(order => new
+            {
+                numero = order.Number,
+                situacao = order.Status.ToString(),
+                criadoEm = order.CreatedAtUtc,
+                total = order.Total,
+                itens = order.Items.Select(item => new
+                {
+                    produto = item.ProductName,
+                    variacao = item.VariantName,
+                    quantidade = item.Quantity,
+                    precoUnitario = item.UnitPrice,
+                }),
+            }),
+            exportadoEm = DateTimeOffset.UtcNow,
+        };
+
+        return File(
+            System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(payload,
+                new System.Text.Json.JsonSerializerOptions { WriteIndented = true }),
+            "application/json",
+            $"meus-dados-{DateTime.UtcNow:yyyyMMdd}.json");
+    }
+
+    [HttpPost("/minha-conta/dados/excluir")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ExcluirConta(CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+
+        if (user is null)
+        {
+            return Challenge();
+        }
+
+        var customerId = Guid.TryParse(user.Id, out var parsed) ? parsed : (Guid?)null;
+
+        if (customerId is not null)
+        {
+            var addresses = await addressService.ListAsync(customerId.Value, cancellationToken);
+
+            foreach (var address in addresses)
+            {
+                await addressService.DeleteAsync(customerId.Value, address.Id, cancellationToken);
+            }
+        }
+
+        var anonymousEmail = $"excluido+{user.Id[..8]}@anonimizado.local";
+
+        user.Email = anonymousEmail;
+        user.UserName = anonymousEmail;
+        user.NormalizedEmail = anonymousEmail.ToUpperInvariant();
+        user.NormalizedUserName = anonymousEmail.ToUpperInvariant();
+        user.FullName = "Conta removida";
+        user.PhoneNumber = null;
+        user.EmailConfirmed = false;
+
+        await userManager.UpdateAsync(user);
+        await signInManager.SignOutAsync();
+
+        TempData["DadosMessage"] = "Conta anonimizada e acesso encerrado.";
+
+        return Redirect("/");
     }
 
     private async Task<Guid?> GetCustomerIdAsync()

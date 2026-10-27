@@ -1,0 +1,44 @@
+@{
+    ViewData["Title"] = "Meus dados";
+}
+
+<section class="container-page py-10">
+    <nav aria-label="Você está aqui" class="text-xs text-muted">
+        <a class="hover:text-primary" href="/minha-conta">Minha conta</a>
+        <span> / </span>
+        <span>Meus dados</span>
+    </nav>
+
+    <h1 class="mt-2 text-2xl text-primary">Meus dados</h1>
+    <p class="mt-1 text-sm text-muted">Direitos previstos na LGPD (Lei 13.709/2018).</p>
+
+    @if (TempData["DadosMessage"] is string message)
+    {
+        <p class="card mt-4 border-l-4 border-l-olive text-sm" role="status">@message</p>
+    }
+
+    <div class="mt-6 grid gap-6 md:grid-cols-2">
+        <div class="card">
+            <h2 class="text-lg">Exportar meus dados</h2>
+            <p class="mt-2 text-sm text-muted">
+                Baixe um arquivo JSON com seus dados de conta, endereços e pedidos.
+            </p>
+            <a class="btn btn-outline mt-4" href="/minha-conta/dados/exportar">Baixar arquivo</a>
+        </div>
+
+        <div class="card">
+            <h2 class="text-lg">Excluir minha conta</h2>
+            <p class="mt-2 text-sm text-muted">
+                Seus dados de identificação são anonimizados e o acesso é encerrado.
+                Os pedidos são mantidos de forma anonimizada por obrigação fiscal.
+            </p>
+
+            <form method="post" action="/minha-conta/dados/excluir" class="mt-4">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline !border-primary !text-primary">
+                    Quero excluir minha conta
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
