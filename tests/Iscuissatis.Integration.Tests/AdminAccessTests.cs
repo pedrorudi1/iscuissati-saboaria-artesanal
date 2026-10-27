@@ -11,7 +11,7 @@ namespace Iscuissatis.Integration.Tests;
 public class AdminAccessTests(IntegrationTestFixture fixture)
 {
     private const string ClientEmail = "cliente@teste.local";
-    private const string ClientPassword = "senha-do-cliente-123";
+    private const string ClientPassword = "SenhaDoCliente123";
 
     [Fact]
     public async Task Seed_creates_admin_user_with_admin_role()

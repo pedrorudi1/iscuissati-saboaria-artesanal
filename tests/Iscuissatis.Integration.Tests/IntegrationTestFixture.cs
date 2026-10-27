@@ -19,7 +19,7 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
         .Build();
 
     public const string AdminEmail = "admin@teste.local";
-    public const string AdminPassword = "senha-de-teste-123";
+    public const string AdminPassword = "SenhaDeTeste123";
 
     public WebApplicationFactory<Program> Factory { get; private set; } = null!;
 
