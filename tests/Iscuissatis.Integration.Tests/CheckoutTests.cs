@@ -72,7 +72,7 @@ public class CheckoutTests(IntegrationTestFixture fixture)
     }
 
     [Fact]
-    public async Task Invalid_zip_code_is_rejected_with_a_message()
+    public async Task Invalid_zip_code_is_rejected_before_creating_the_order()
     {
         var (client, _, email) = await GuestWithItemAsync(stock: 3);
 
@@ -92,7 +92,7 @@ public class CheckoutTests(IntegrationTestFixture fixture)
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var html = System.Net.WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
-        html.ShouldContain("CEP inválido");
+        html.ShouldContain("CEP deve ter 8 dígitos");
 
         using var scope = fixture.Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
