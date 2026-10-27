@@ -17,6 +17,37 @@ Kit inicial para construir a loja virtual e o painel administrativo com agentes 
    └─ design/                        protótipos: home (desktop e mobile) e página do produto
 ```
 
+## Rodando localmente
+
+Pré-requisitos: .NET SDK 10 e Docker.
+
+```bash
+cp .env.example .env        # ajuste POSTGRES_PASSWORD e Seed__AdminPassword
+docker compose up --build   # aplicação em http://localhost:8080, health em /health
+```
+
+Sem Docker, com um PostgreSQL acessível:
+
+```bash
+export ConnectionStrings__DefaultConnection="Host=localhost;Port=5432;Database=iscuissatis;Username=iscuissatis;Password=..."
+dotnet run --project src/Iscuissatis.Web
+```
+
+Testes:
+
+```bash
+dotnet test                                  # unidade + integração (exige Docker)
+dotnet test --collect:"XPlat Code Coverage"   # com cobertura
+```
+
+## Deploy (Coolify + Cloudflare Tunnel)
+
+- A aplicação escuta em `http://+:8080` e não redireciona para HTTPS por conta própria:
+  o TLS termina no Cloudflare (`Security__UseHttpsRedirection=false`), evitando loop de redirect.
+- Cada variável do `.env.example` vira uma variável de ambiente do recurso no Coolify.
+- Migrations rodam no start (`Database__MigrateOnStartup=true`); o Postgres do Coolify
+  deve ser um serviço separado ou um banco gerenciado, com backup diário.
+
 ## Como começar
 
 1. Crie o repositório e copie o conteúdo desta pasta para a raiz. Faça o commit inicial.
