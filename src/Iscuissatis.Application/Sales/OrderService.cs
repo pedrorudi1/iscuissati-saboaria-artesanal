@@ -47,6 +47,9 @@ public sealed class OrderService(IOrderRepository orders, TimeProvider clock)
         return order;
     }
 
+    public Task<Order?> GetByNumberAsync(string number, CancellationToken cancellationToken = default)
+        => orders.FindByNumberAsync(number, cancellationToken);
+
     public async Task<Order> CancelAsync(Guid orderId, CancellationToken cancellationToken = default)
     {
         var order = await orders.FindAsync(orderId, cancellationToken)
