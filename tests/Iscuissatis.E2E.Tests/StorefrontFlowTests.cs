@@ -39,12 +39,12 @@ public class StorefrontFlowTests(BrowserFixture fixture)
             await page.GotoAsync("/checkout", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
             await page.Locator("#Recipient").FillAsync("Maria Teste");
-            await page.Locator("#ZipCode").FillAsync("18300-000");
-            await page.Locator("#Street").FillAsync("Rua das Flores");
+            await page.Locator("#zipCode").FillAsync("18300-000");
+            await page.Locator("#street").FillAsync("Rua das Flores");
             await page.Locator("#Number").FillAsync("123");
-            await page.Locator("#District").FillAsync("Centro");
-            await page.Locator("#City").FillAsync("Tatuí");
-            await page.Locator("#State").FillAsync("SP");
+            await page.Locator("#district").FillAsync("Centro");
+            await page.Locator("#city").FillAsync("Tatuí");
+            await page.Locator("#state").FillAsync("SP");
             await page.Locator("#GuestEmail").FillAsync($"e2e.{Guid.NewGuid():N}@teste.local");
 
             await page.GetByRole(AriaRole.Button, new() { Name = "Criar pedido" }).ClickAsync();
