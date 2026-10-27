@@ -1,6 +1,10 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Hosting;
+using Iscuissatis.Application.Notifications;
 using Testcontainers.PostgreSql;
 
 namespace Iscuissatis.Integration.Tests;
@@ -40,6 +44,11 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
             builder.UseSetting("Security:UseHttpsRedirection", "false");
             builder.UseSetting("Storage:RootPath", StorageRoot);
             builder.UseSetting("Storage:PublicPrefix", "/media");
+            builder.ConfigureTestServices(services =>
+            {
+                services.RemoveAll<IEmailSender>();
+                services.AddSingleton<IEmailSender, RecordingEmailSender>();
+            });
             builder.UseSetting("Seed:AdminEmail", AdminEmail);
             builder.UseSetting("Seed:AdminPassword", AdminPassword);
             builder.UseSetting("Seed:AdminFullName", "Administrador de Teste");
