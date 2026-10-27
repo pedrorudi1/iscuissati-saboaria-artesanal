@@ -1,0 +1,99 @@
+@using Iscuissatis.Domain.Sales
+@model Iscuissatis.Application.Catalog.Public.PagedResult<Iscuissatis.Application.Sales.OrderSummary>
+@{
+    var status = ViewData["Status"] as OrderStatus?;
+    var label = new Func<OrderStatus, string>(value => value switch
+    {
+        OrderStatus.PendingPayment => "Aguardando pagamento",
+        OrderStatus.Paid => "Pago",
+        OrderStatus.Preparing => "Em preparo",
+        OrderStatus.Shipped => "Enviado",
+        OrderStatus.Delivered => "Entregue",
+        OrderStatus.Canceled => "Cancelado",
+        _ => "Reembolsado",
+    });
+}
+
+@if (ViewData["Message"] is string message && !string.IsNullOrWhiteSpace(message))
+{
+    <p class="card mb-6 border-l-4 border-l-olive text-sm" role="status">@message</p>
+}
+@if (ViewData["Error"] is string error && !string.IsNullOrWhiteSpace(error))
+{
+    <p class="card mb-6 border-l-4 border-l-primary text-sm" role="alert">@error</p>
+}
+
+<form method="get" class="card grid gap-4 sm:grid-cols-[1fr_220px_auto] sm:items-end">
+    <div class="field !mb-0">
+        <label for="q">Buscar por número, e-mail ou destinatário</label>
+        <input id="q" name="q" value="@ViewData["Search"]"/>
+    </div>
+    <div class="field !mb-0">
+        <label for="status">Situação</label>
+        <select id="status" name="status">
+            <option value="">Todas</option>
+            @foreach (var value in Enum.GetValues<OrderStatus>())
+            {
+                <option value="@((int)value)" selected="@(status == value)">@label(value)</option>
+            }
+        </select>
+    </div>
+    <button type="submit" class="btn btn-outline">Filtrar</button>
+</form>
+
+<p class="mt-4 text-sm text-muted">@Model.TotalItems pedido(s) encontrado(s).</p>
+
+@if (Model.Items.Count == 0)
+{
+    <div class="card mt-4 text-center">
+        <p class="font-display uppercase tracking-[0.08em] text-sm text-muted">Nenhum pedido</p>
+        <p class="mt-2 text-sm text-muted">Os pedidos criados no checkout aparecem aqui.</p>
+    </div>
+}
+else
+{
+    <div class="card mt-4 overflow-x-auto p-0">
+        <table class="w-full text-left text-sm">
+            <thead class="bg-bg">
+                <tr class="font-display uppercase tracking-[0.08em] text-[11px] text-muted">
+                    <th scope="col" class="px-5 py-3">Pedido</th>
+                    <th scope="col" class="px-5 py-3">Cliente</th>
+                    <th scope="col" class="px-5 py-3">Data</th>
+                    <th scope="col" class="px-5 py-3">Itens</th>
+                    <th scope="col" class="px-5 py-3">Situação</th>
+                    <th scope="col" class="px-5 py-3 text-right">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var order in Model.Items)
+            {
+                <tr class="border-t border-line">
+                    <td class="px-5 py-3">
+                        <a class="font-mono text-xs underline text-primary" href="/admin/pedidos/@order.Id">@order.Number</a>
+                    </td>
+                    <td class="px-5 py-3">@order.Recipient <span class="block text-xs text-muted">@order.CustomerEmail</span></td>
+                    <td class="px-5 py-3 text-muted">@order.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                    <td class="px-5 py-3">@order.ItemCount</td>
+                    <td class="px-5 py-3">@label(order.Status)</td>
+                    <td class="px-5 py-3 text-right">R$ @order.Total.ToString("N2")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="Paginação" class="mt-6 flex items-center justify-center gap-3">
+            @if (Model.HasPrevious)
+            {
+                <a class="btn btn-outline" href="/admin/pedidos?pagina=@(Model.Page - 1)&q=@ViewData["Search"]&status=@((int?)status)">Anterior</a>
+            }
+            <span class="text-sm text-muted">Página @Model.Page de @Model.TotalPages</span>
+            @if (Model.HasNext)
+            {
+                <a class="btn btn-outline" href="/admin/pedidos?pagina=@(Model.Page + 1)&q=@ViewData["Search"]&status=@((int?)status)">Próxima</a>
+            }
+        </nav>
+    }
+}

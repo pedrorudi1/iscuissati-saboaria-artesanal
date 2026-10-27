@@ -22,6 +22,13 @@ public interface IOrderRepository
 
     Task<IReadOnlyList<Order>> ListByCustomerAsync(Guid customerId, CancellationToken cancellationToken = default);
 
+    Task<Catalog.Public.PagedResult<OrderSummary>> ListAsync(
+        string? search,
+        Domain.Sales.OrderStatus? status,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default);
+
     /// <summary>Libera as reservas ativas do pedido e devolve o estoque.</summary>
     Task ReleaseReservationsAsync(Guid orderId, DateTimeOffset now, CancellationToken cancellationToken = default);
 
