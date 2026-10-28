@@ -17,6 +17,8 @@ using Iscuissatis.Infrastructure.Reporting;
 using Iscuissatis.Infrastructure.Shipping;
 using Iscuissatis.Infrastructure.Storage;
 using System.Globalization;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Iscuissatis.Web.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -101,9 +103,39 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddHealthChecks()
     .AddNpgSql(connectionString, name: "postgres", tags: ["ready"]);
 
+// Chaves de criptografia em volume: sem isso, todo deploy desloga admin e clientes
+// e invalida os cookies de 2FA.
+var keysPath = builder.Configuration["Security:DataProtectionPath"];
+
+if (!string.IsNullOrWhiteSpace(keysPath))
+{
+    Directory.CreateDirectory(keysPath);
+
+    builder.Services.AddDataProtection()
+        .PersistKeysToFileSystem(new DirectoryInfo(keysPath))
+        .SetApplicationName("Iscuissatis");
+}
+
+// Atrás do Cloudflare Tunnel / proxy reverso: confiar nos cabeçalhos de encaminhamento
+// para que a aplicação veja https e o IP real do cliente.
+if (builder.Configuration.GetValue("Security:TrustForwardedHeaders", false))
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        options.KnownNetworks.Clear();
+        options.KnownProxies.Clear();
+    });
+}
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+if (app.Configuration.GetValue("Security:TrustForwardedHeaders", false))
+{
+    app.UseForwardedHeaders();
+}
 
 if (!app.Environment.IsDevelopment())
 {
