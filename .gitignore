@@ -16,3 +16,4 @@ artifacts/
 .tools/
 artifacts/e2e/
 artifacts/
+backups/

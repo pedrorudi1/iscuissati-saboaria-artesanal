@@ -58,6 +58,8 @@ dotnet test --collect:"XPlat Code Coverage"   # com cobertura
 
 ## Deploy (Coolify + Cloudflare Tunnel)
 
+Checklist completo de produção: [`docs/deploy-coolify.md`](docs/deploy-coolify.md).
+
 - A aplicação escuta em `http://+:8080` e não redireciona para HTTPS por conta própria:
   o TLS termina no Cloudflare (`Security__UseHttpsRedirection=false`), evitando loop de redirect.
 - Cada variável do `.env.example` vira uma variável de ambiente do recurso no Coolify.
