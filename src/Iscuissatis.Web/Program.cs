@@ -90,6 +90,12 @@ builder.Services.Configure<PaymentOptions>(builder.Configuration.GetSection(Paym
 builder.Services.AddScoped<IPaymentGateway, FakePaymentGateway>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<PaymentService>();
+builder.Services.AddScoped<PaymentExpirationService>();
+
+if (builder.Configuration.GetValue("Payments:ExpirationWorker", true))
+{
+    builder.Services.AddHostedService<PaymentExpirationWorker>();
+}
 builder.Services.AddHttpClient<IZipCodeLookup, ViaCepLookup>(client =>
 {
     client.BaseAddress = new Uri("https://viacep.com.br/");

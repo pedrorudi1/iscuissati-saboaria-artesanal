@@ -1,65 +1,114 @@
+@using Iscuissatis.Domain.Sales
 @model Iscuissatis.Domain.Sales.Order
 @{
     var statusLabel = Model.Status switch
     {
-        Iscuissatis.Domain.Sales.OrderStatus.PendingPayment => "Aguardando pagamento",
-        Iscuissatis.Domain.Sales.OrderStatus.Paid => "Pago",
-        Iscuissatis.Domain.Sales.OrderStatus.Preparing => "Em preparo",
-        Iscuissatis.Domain.Sales.OrderStatus.Shipped => "Enviado",
-        Iscuissatis.Domain.Sales.OrderStatus.Delivered => "Entregue",
-        Iscuissatis.Domain.Sales.OrderStatus.Canceled => "Cancelado",
+        OrderStatus.PendingPayment => "Aguardando pagamento",
+        OrderStatus.Paid => "Pago",
+        OrderStatus.Preparing => "Em preparo",
+        OrderStatus.Shipped => "Enviado",
+        OrderStatus.Delivered => "Entregue",
+        OrderStatus.Canceled => "Cancelado",
         _ => "Reembolsado",
     };
+
+    var paymentStatus = ViewData["PaymentStatus"] as PaymentStatus?;
+    var qrCode = ViewData["PaymentQrCode"] as string;
+    var expiresAt = ViewData["PaymentExpiresAtUtc"] as DateTimeOffset?;
+    var isAwaitingPayment = Model.Status == OrderStatus.PendingPayment;
 }
 
 <section class="container-page py-10">
     <p class="eyebrow">Pedido criado</p>
     <h1 class="mt-2 text-3xl md:text-[38px] text-primary">Obrigado!</h1>
 
-    <div class="card mt-6 max-w-3xl">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <p class="text-[11px] uppercase tracking-[0.18em] text-muted">Número do pedido</p>
-                <p class="font-display text-2xl">@Model.Number</p>
+    <div class="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-start">
+        <div class="card">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <p class="text-[11px] uppercase tracking-[0.18em] text-muted">Número do pedido</p>
+                    <p class="font-display text-2xl">@Model.Number</p>
+                </div>
+                <span class="rounded border border-line px-3 py-2 text-xs uppercase tracking-[0.1em] text-muted">
+                    @statusLabel
+                </span>
             </div>
-            <span class="rounded border border-line px-3 py-2 text-xs uppercase tracking-[0.1em] text-muted">
-                @statusLabel
-            </span>
+
+            <ul class="mt-6 space-y-3 text-sm">
+                @foreach (var item in Model.Items)
+                {
+                    <li class="flex justify-between gap-3 border-b border-line pb-2">
+                        <span>@item.Quantity × @item.ProductName <span class="text-muted">(@item.VariantName)</span></span>
+                        <span class="whitespace-nowrap">R$ @item.LineTotal.ToString("N2")</span>
+                    </li>
+                }
+            </ul>
+
+            <dl class="mt-4 space-y-1 text-sm">
+                <div class="flex justify-between"><dt class="text-muted">Subtotal</dt><dd>R$ @Model.Subtotal.ToString("N2")</dd></div>
+                <div class="flex justify-between"><dt class="text-muted">Frete</dt><dd>R$ @Model.Shipping.ToString("N2")</dd></div>
+                <div class="flex justify-between border-t border-line pt-2 font-bold"><dt>Total</dt><dd>R$ @Model.Total.ToString("N2")</dd></div>
+            </dl>
+
+            <div class="mt-6 text-sm text-muted">
+                <p class="font-display uppercase tracking-[0.08em] text-xs text-ink">Entrega</p>
+                <p>@Model.ShippingAddress.Recipient</p>
+                <p>@Model.ShippingAddress.Street, @Model.ShippingAddress.Number @Model.ShippingAddress.Complement</p>
+                <p>@Model.ShippingAddress.District — @Model.ShippingAddress.City / @Model.ShippingAddress.State</p>
+                <p>CEP @Model.ShippingAddress.ZipCode</p>
+            </div>
         </div>
 
-        <ul class="mt-6 space-y-3 text-sm">
-            @foreach (var item in Model.Items)
+        <aside class="card">
+            @if (Model.Status == OrderStatus.Paid)
             {
-                <li class="flex justify-between gap-3 border-b border-line pb-2">
-                    <span>@item.Quantity × @item.ProductName <span class="text-muted">(@item.VariantName)</span></span>
-                    <span class="whitespace-nowrap">R$ @item.LineTotal.ToString("N2")</span>
-                </li>
+                <h2 class="text-lg">Pagamento confirmado</h2>
+                <p class="mt-2 text-sm text-muted">
+                    Recebemos seu pagamento. O pedido segue para preparo e você será avisado por e-mail
+                    quando for enviado.
+                </p>
             }
-        </ul>
+            else if (isAwaitingPayment && qrCode is not null)
+            {
+                <h2 class="text-lg">Pague com Pix</h2>
+                <p class="mt-2 text-sm text-muted">
+                    Escaneie o código abaixo no aplicativo do seu banco ou use o Pix copia-e-cola.
+                </p>
 
-        <div class="mt-4 flex justify-between font-bold">
-            <span>Total</span>
-            <span>R$ @Model.Total.ToString("N2")</span>
-        </div>
+                <img src="@qrCode" alt="QR code para pagamento por Pix" width="220" height="220"
+                     class="mx-auto mt-4 rounded border border-line bg-surface p-2"/>
 
-        <div class="mt-6 text-sm text-muted">
-            <p class="font-display uppercase tracking-[0.08em] text-xs text-ink">Entrega</p>
-            <p>@Model.ShippingAddress.Recipient</p>
-            <p>@Model.ShippingAddress.Street, @Model.ShippingAddress.Number @Model.ShippingAddress.Complement</p>
-            <p>@Model.ShippingAddress.District — @Model.ShippingAddress.City / @Model.ShippingAddress.State</p>
-            <p>CEP @Model.ShippingAddress.ZipCode</p>
-        </div>
-    </div>
+                @if (expiresAt is not null)
+                {
+                    <p class="mt-3 text-center text-xs text-muted">
+                        O código expira em @expiresAt.Value.ToLocalTime().ToString("dd/MM 'às' HH:mm").
+                        Depois disso o pedido é cancelado e o estoque volta para a loja.
+                    </p>
+                }
 
-    <div class="card mt-6 max-w-3xl">
-        <h2 class="text-lg">Próximo passo: pagamento</h2>
-        <p class="mt-2 text-sm text-muted">
-            O estoque está reservado por 30 minutos. A cobrança por Pix entra na Fase 5 do projeto;
-            até lá, este pedido fica registrado como <strong>aguardando pagamento</strong> e não é cobrado.
-        </p>
-        <p class="mt-4 text-xs text-muted">
-            Guarde o número <strong>@Model.Number</strong> para acompanhar.
-        </p>
+                <label class="mt-4 block text-[11px] uppercase tracking-[0.18em] text-muted" for="pixCopiaECola">
+                    Pix copia-e-cola
+                </label>
+                <textarea id="pixCopiaECola" readonly rows="3"
+                          class="mt-1 w-full rounded border border-field bg-surface p-2 font-mono text-[11px]">@ViewData["PaymentCopyPaste"]</textarea>
+                <p class="mt-1 text-[11px] text-muted">Selecione o texto acima e copie no seu banco.</p>
+
+                <p class="mt-4 text-xs text-muted">
+                    Já pagou? A confirmação chega automaticamente em alguns segundos.
+                    <a class="underline text-primary" href="/pedido/@Model.Number">Atualizar status</a>
+                </p>
+            }
+            else
+            {
+                <h2 class="text-lg">Próximo passo: pagamento</h2>
+                <p class="mt-2 text-sm text-muted">
+                    Status: @(paymentStatus?.ToString() ?? "sem cobrança registrada").
+                </p>
+                <p class="mt-2 text-xs text-muted">
+                    Guarde o número <strong>@Model.Number</strong> para acompanhar.
+                </p>
+            }
+        </aside>
     </div>
 
     <p class="mt-8">
