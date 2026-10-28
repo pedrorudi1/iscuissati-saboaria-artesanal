@@ -20,7 +20,7 @@ public class PixCheckoutTests(IntegrationTestFixture fixture)
     [Fact]
     public async Task Confirmation_shows_pix_qr_and_copy_paste_while_pending()
     {
-        var (number, _, _) = await CreateOrderAsync(stock: 3, quantity: 1);
+        var (number, _, _, _) = await CreateOrderAsync(stock: 3, quantity: 1);
 
         var client = fixture.Factory.CreateClient();
         var html = System.Net.WebUtility.HtmlDecode(
@@ -34,7 +34,7 @@ public class PixCheckoutTests(IntegrationTestFixture fixture)
     [Fact]
     public async Task Expired_pix_cancels_the_order_and_returns_the_stock()
     {
-        var (number, orderId, variantId) = await CreateOrderAsync(stock: 2, quantity: 2);
+        var (number, orderId, variantId, _) = await CreateOrderAsync(stock: 2, quantity: 2);
 
         using var scope = fixture.Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -66,7 +66,7 @@ public class PixCheckoutTests(IntegrationTestFixture fixture)
     [Fact]
     public async Task Paid_order_shows_confirmation_instead_of_pix()
     {
-        var (number, _, paymentId) = await CreateOrderAsync(stock: 3, quantity: 1);
+        var (number, _, _, paymentId) = await CreateOrderAsync(stock: 3, quantity: 1);
 
         var body = $"{{\"eventId\":\"evt-{Guid.NewGuid():N}\",\"paymentId\":\"{paymentId}\",\"orderNumber\":\"{number}\",\"amount\":24.90,\"status\":\"approved\"}}";
         var signature = Convert.ToHexString(
@@ -87,7 +87,7 @@ public class PixCheckoutTests(IntegrationTestFixture fixture)
         html.ShouldNotContain("Pague com Pix");
     }
 
-    private async Task<(string Number, Guid OrderId, string PaymentId)> CreateOrderAsync(int stock, int quantity)
+    private async Task<(string Number, Guid OrderId, Guid VariantId, string PaymentId)> CreateOrderAsync(int stock, int quantity)
     {
         var suffix = Guid.NewGuid().ToString("N")[..6];
         Guid variantId;
@@ -120,6 +120,6 @@ public class PixCheckoutTests(IntegrationTestFixture fixture)
 
         var payment = await paymentService.StartAsync(order);
 
-        return (order.Number, order.Id, payment.ProviderPaymentId);
+        return (order.Number, order.Id, variantId, payment.ProviderPaymentId);
     }
 }
