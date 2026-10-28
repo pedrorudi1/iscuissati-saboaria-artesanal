@@ -1,5 +1,6 @@
 using Iscuissatis.Application.Sales;
 using Iscuissatis.Application.Notifications;
+using Iscuissatis.Application.Payments;
 using Iscuissatis.Application.Shipping;
 using Iscuissatis.Application.Catalog;
 using Iscuissatis.Domain.Common;
@@ -21,7 +22,8 @@ public class CheckoutController(
     AddressService addressService,
     IShippingProvider shippingProvider,
     IProductRepository products,
-    IOrderEmailNotifier orderEmails) : Controller
+    IOrderEmailNotifier orderEmails,
+    PaymentService paymentService) : Controller
 {
     [HttpGet("/checkout")]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)

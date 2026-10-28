@@ -10,7 +10,9 @@ using Iscuissatis.Infrastructure.Persistence;
 using Iscuissatis.Infrastructure.Persistence.Repositories;
 using Iscuissatis.Infrastructure.Integrations;
 using Iscuissatis.Application.Notifications;
+using Iscuissatis.Application.Payments;
 using Iscuissatis.Infrastructure.Notifications;
+using Iscuissatis.Infrastructure.Payments;
 using Iscuissatis.Infrastructure.Reporting;
 using Iscuissatis.Infrastructure.Shipping;
 using Iscuissatis.Infrastructure.Storage;
@@ -82,6 +84,10 @@ builder.Services.AddSingleton<IShippingProvider, TableShippingProvider>();
 builder.Services.AddScoped<IEmailSender, LoggingEmailSender>();
 builder.Services.AddScoped<IOrderEmailNotifier, OrderEmailNotifier>();
 builder.Services.AddScoped<IReportQueryService, ReportQueryService>();
+builder.Services.Configure<PaymentOptions>(builder.Configuration.GetSection(PaymentOptions.SectionName));
+builder.Services.AddScoped<IPaymentGateway, FakePaymentGateway>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<PaymentService>();
 builder.Services.AddHttpClient<IZipCodeLookup, ViaCepLookup>(client =>
 {
     client.BaseAddress = new Uri("https://viacep.com.br/");
