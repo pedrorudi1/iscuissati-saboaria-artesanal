@@ -1,6 +1,7 @@
 using Iscuissatis.Application.Sales;
 using Iscuissatis.Application.Notifications;
 using Iscuissatis.Application.Payments;
+using QRCoder;
 using Iscuissatis.Application.Shipping;
 using Iscuissatis.Application.Catalog;
 using Iscuissatis.Domain.Common;
@@ -23,7 +24,8 @@ public class CheckoutController(
     IShippingProvider shippingProvider,
     IProductRepository products,
     IOrderEmailNotifier orderEmails,
-    PaymentService paymentService) : Controller
+    PaymentService paymentService,
+    IPaymentRepository paymentRepository) : Controller
 {
     [HttpGet("/checkout")]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -194,6 +196,24 @@ public class CheckoutController(
         }
 
         ViewData["Title"] = $"Pedido {order.Number}";
+
+        var payment = await paymentRepository.FindByOrderIdAsync(order.Id, cancellationToken);
+
+        if (payment is not null)
+        {
+            ViewData["PaymentStatus"] = payment.Status;
+            ViewData["PaymentExpiresAtUtc"] = payment.ExpiresAtUtc;
+            ViewData["PaymentCopyPaste"] = payment.CopyPaste;
+
+            if (!string.IsNullOrWhiteSpace(payment.CopyPaste))
+            {
+                using var generator = new QRCodeGenerator();
+                using var data = generator.CreateQrCode(payment.CopyPaste, QRCodeGenerator.ECCLevel.M);
+                var png = new PngByteQRCode(data).GetGraphic(8);
+                ViewData["PaymentQrCode"] = $"data:image/png;base64,{Convert.ToBase64String(png)}";
+            }
+        }
+
         return View("Confirmacao", order);
     }
 
