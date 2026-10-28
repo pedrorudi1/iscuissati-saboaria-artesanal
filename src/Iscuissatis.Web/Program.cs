@@ -85,7 +85,7 @@ builder.Services.AddScoped<IReportQueryService, ReportQueryService>();
 builder.Services.AddHttpClient<IZipCodeLookup, ViaCepLookup>(client =>
 {
     client.BaseAddress = new Uri("https://viacep.com.br/");
-    client.Timeout = TimeSpan.FromSeconds(5);
+    client.Timeout = TimeSpan.FromSeconds(10); // ViaCEP pode passar de 4s em rede lenta
 });
 builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection(StorageOptions.SectionName));
 builder.Services.AddSingleton<IFileStorage, LocalFileStorage>();
@@ -115,7 +115,17 @@ if (app.Configuration.GetValue("Security:UseHttpsRedirection", true))
 app.UseStatusCodePagesWithReExecute("/acesso-negado");
 
 // Loja brasileira: preços, datas e números em pt-BR, independentemente do host.
-var ptBr = new CultureInfo("pt-BR");
+// Em ambientes sem ICU (containers mínimos), cai para a cultura invariante em vez de quebrar.
+CultureInfo ptBr;
+try
+{
+    ptBr = new CultureInfo("pt-BR");
+}
+catch (CultureNotFoundException)
+{
+    ptBr = CultureInfo.InvariantCulture;
+}
+
 app.UseRequestLocalization(new RequestLocalizationOptions
 {
     DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(ptBr),
