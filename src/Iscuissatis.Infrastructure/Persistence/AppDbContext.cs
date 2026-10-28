@@ -2,6 +2,7 @@ using Iscuissatis.Domain.Catalog;
 using Iscuissatis.Domain.Sales;
 using Iscuissatis.Infrastructure.Identity;
 using Iscuissatis.Infrastructure.Notifications;
+using Iscuissatis.Infrastructure.Payments;
 using Iscuissatis.Infrastructure.Persistence.Configurations;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +34,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<SentOrderEmail> SentOrderEmails => Set<SentOrderEmail>();
 
+    public DbSet<Payment> Payments => Set<Payment>();
+
+    public DbSet<ProcessedWebhookEvent> ProcessedWebhookEvents => Set<ProcessedWebhookEvent>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -46,5 +51,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         builder.ApplyCatalog();
         builder.ApplySales();
         builder.ApplyNotifications();
+        builder.ApplyPayments();
     }
 }
