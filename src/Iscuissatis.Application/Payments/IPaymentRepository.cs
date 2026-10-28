@@ -8,6 +8,13 @@ public interface IPaymentRepository
 
     Task<bool> WebhookAlreadyProcessedAsync(string provider, string eventId, CancellationToken cancellationToken = default);
 
+    Task<Payment?> FindByOrderIdAsync(Guid orderId, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<Payment>> ListExpiredPendingAsync(
+        DateTimeOffset now,
+        int take = 50,
+        CancellationToken cancellationToken = default);
+
     void Add(Payment payment);
 
     void AddProcessedEvent(string provider, string eventId, DateTimeOffset receivedAtUtc);
