@@ -26,7 +26,7 @@ public sealed class PaymentExpirationWorker(
                 await using var scope = scopeFactory.CreateAsyncScope();
                 var service = scope.ServiceProvider.GetRequiredService<PaymentExpirationService>();
 
-                var expired = await service.ExpireOverdueAsync(stoppingToken);
+                var expired = await service.ExpireOverdueAsync(asOf: null, stoppingToken);
 
                 if (expired > 0)
                 {
