@@ -45,6 +45,7 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
             builder.UseSetting("Storage:RootPath", StorageRoot);
             builder.UseSetting("Storage:PublicPrefix", "/media");
             builder.UseSetting("Payments:WebhookSecret", "test-webhook-secret");
+            builder.UseSetting("Payments:ExpirationWorker", "false");
             builder.ConfigureTestServices(services =>
             {
                 services.RemoveAll<IEmailSender>();

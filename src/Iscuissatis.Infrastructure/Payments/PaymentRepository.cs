@@ -15,6 +15,23 @@ public sealed class PaymentRepository(AppDbContext dbContext) : IPaymentReposito
         => dbContext.ProcessedWebhookEvents.AnyAsync(
             item => item.Provider == provider && item.EventId == eventId, cancellationToken);
 
+    public Task<Payment?> FindByOrderIdAsync(Guid orderId, CancellationToken cancellationToken = default)
+        => dbContext.Payments
+            .OrderByDescending(payment => payment.CreatedAtUtc)
+            .FirstOrDefaultAsync(payment => payment.OrderId == orderId, cancellationToken);
+
+    public async Task<IReadOnlyList<Payment>> ListExpiredPendingAsync(
+        DateTimeOffset now,
+        int take = 50,
+        CancellationToken cancellationToken = default)
+        => await dbContext.Payments
+            .Where(payment => payment.Status == Domain.Sales.PaymentStatus.Pending
+                              && payment.ExpiresAtUtc != null
+                              && payment.ExpiresAtUtc < now)
+            .OrderBy(payment => payment.ExpiresAtUtc)
+            .Take(take)
+            .ToListAsync(cancellationToken);
+
     public void Add(Payment payment) => dbContext.Payments.Add(payment);
 
     public void AddProcessedEvent(string provider, string eventId, DateTimeOffset receivedAtUtc)
