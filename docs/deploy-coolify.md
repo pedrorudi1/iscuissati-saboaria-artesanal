@@ -54,6 +54,9 @@ Ordem: infraestrutura → banco → aplicação → domínio → verificação �
 | `Payments__WebhookSecret` | segredo longo e aleatório |
 | `Payments__ExpirationWorker` | `true` |
 | `Analytics__Ga4Id` | deixar vazio até existir consentimento e ID |
+| `Email__Provider` | `resend` |
+| `Email__ResendApiKey` | chave criada no painel do Resend (nunca no repositório) |
+| `Email__From` | remetente **verificado** no Resend, ex.: `Iscuissati's Saboaria <no-reply@seudominio.com.br>` |
 
 > **Nunca** ligue `Database__SeedDemo=true` em produção: ele cria um produto fictício publicado.
 
@@ -80,6 +83,8 @@ Ordem: infraestrutura → banco → aplicação → domínio → verificação �
 - [ ] `/admin/pedidos` mostra o pedido; cancelar devolve o estoque.
 - [ ] `/sitemap.xml` lista o produto publicado; `/robots.txt` bloqueia `/admin`.
 - [ ] **Refazer login depois de um deploy**: se pedir login de novo, o volume de chaves não está montado.
+- [ ] Domínio verificado no Resend (registros SPF/DKIM publicados) e **e-mail de teste recebido** de verdade
+      — crie um pedido de teste e confirme que a confirmação chegou em uma caixa real, não em spam.
 
 ---
 

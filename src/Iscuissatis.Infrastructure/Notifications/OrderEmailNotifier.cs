@@ -30,7 +30,17 @@ public sealed class OrderEmailNotifier(
             return;
         }
 
-        await emailSender.SendAsync(BuildMessage(order, kind, to), cancellationToken);
+        try
+        {
+            await emailSender.SendAsync(BuildMessage(order, kind, to), cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            // E-mail é aviso, não regra de negócio: a compra não pode falhar por causa dele.
+            // Como não registramos o envio, uma retentativa futura ainda é possível.
+            logger.LogError(exception, "Falha ao enviar {Kind} do pedido {Number}.", kind, order.Number);
+            return;
+        }
 
         dbContext.SentOrderEmails.Add(new SentOrderEmail(order.Id, kind, to, clock.GetUtcNow()));
         await dbContext.SaveChangesAsync(cancellationToken);

@@ -83,7 +83,21 @@ builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 builder.Services.AddScoped<AddressService>();
 builder.Services.Configure<ShippingOptions>(builder.Configuration.GetSection(ShippingOptions.SectionName));
 builder.Services.AddSingleton<IShippingProvider, TableShippingProvider>();
-builder.Services.AddScoped<IEmailSender, LoggingEmailSender>();
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.SectionName));
+
+if (string.Equals(builder.Configuration["Email:Provider"], "resend", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddHttpClient<IEmailSender, ResendEmailSender>((provider, client) =>
+    {
+        var emailOptions = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<EmailOptions>>().Value;
+        client.BaseAddress = new Uri(emailOptions.ResendBaseUrl);
+        client.Timeout = TimeSpan.FromSeconds(15);
+    });
+}
+else
+{
+    builder.Services.AddScoped<IEmailSender, LoggingEmailSender>();
+}
 builder.Services.AddScoped<IOrderEmailNotifier, OrderEmailNotifier>();
 builder.Services.AddScoped<IReportQueryService, ReportQueryService>();
 builder.Services.Configure<PaymentOptions>(builder.Configuration.GetSection(PaymentOptions.SectionName));
