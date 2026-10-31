@@ -51,6 +51,33 @@ public class OrderEmailTests(IntegrationTestFixture fixture)
             message.To == email && message.Subject.Contains("cancelado") && message.Subject.Contains(number));
     }
 
+    [Fact]
+    public async Task Email_failure_does_not_break_the_flow_nor_mark_as_sent()
+    {
+        var (orderId, _, _) = await CreateOrderAsync();
+
+        using var scope = fixture.Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var order = await db.Orders.Include(item => item.Items).SingleAsync(item => item.Id == orderId);
+
+        var notifier = new Iscuissatis.Infrastructure.Notifications.OrderEmailNotifier(
+            db,
+            new ExplodingEmailSender(),
+            TimeProvider.System,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<Iscuissatis.Infrastructure.Notifications.OrderEmailNotifier>.Instance);
+
+        await Should.NotThrowAsync(() => notifier.NotifyAsync(order, OrderEmailKind.Shipped));
+
+        (await db.SentOrderEmails.CountAsync(item => item.OrderId == orderId && item.Kind == OrderEmailKind.Shipped))
+            .ShouldBe(0);
+    }
+
+    private sealed class ExplodingEmailSender : IEmailSender
+    {
+        public Task SendAsync(EmailMessage message, CancellationToken cancellationToken = default)
+            => throw new InvalidOperationException("provedor fora do ar");
+    }
+
     private async Task<(Guid OrderId, string Number, string Email)> CreateOrderAsync()
     {
         var suffix = Guid.NewGuid().ToString("N")[..6];
